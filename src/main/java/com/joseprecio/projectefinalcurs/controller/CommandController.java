@@ -45,7 +45,7 @@ public class CommandController {
 		Gson json = new Gson();
 		
 		System.out.println("Command: " + commandReceived.getQueryResult().getQueryText());
-		System.out.println("Lenguaje: " + commandReceived.getQueryResult().getLanguageCode());
+		System.out.println("Lenguaje: " + commandReceived.getQueryResult().getLanguageCode().substring(0, 2));
 		System.out.println("Session: " + commandReceived.getSession());
 		
 		//Creamos el modelo de mensaje de Ariadna Bot Service
@@ -54,7 +54,7 @@ public class CommandController {
 		//Establecemos los atributos
 		ariadnaCommandModel.setCommand(commandReceived.getQueryResult().getQueryText());
 		ariadnaCommandModel.setConversationId(commandReceived.getSession());
-		ariadnaCommandModel.setLanguage(commandReceived.getQueryResult().getLanguageCode());
+		ariadnaCommandModel.setLanguage(commandReceived.getQueryResult().getLanguageCode().substring(0, 2));
 		
 		// Ejecutamos el comando
 		CommandResponseModel response = commandServiceImpl.sendCommand(ariadnaCommandModel);
