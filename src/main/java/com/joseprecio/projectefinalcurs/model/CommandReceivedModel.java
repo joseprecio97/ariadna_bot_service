@@ -13,6 +13,27 @@ public class CommandReceivedModel {
 
 	@NotEmpty
 	private String command;
+	private String conversationId;
+	@NotEmpty
+	private String language;
+
+	
+	
+	public String getConversationId() {
+		return conversationId;
+	}
+
+	public void setConversationId(String conversationId) {
+		this.conversationId = conversationId;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
 
 	public String getCommand() {
 		return command;
@@ -22,6 +43,6 @@ public class CommandReceivedModel {
 		this.command = command;
 	}
 	
-	private CommandReceivedModel() {}
+	public CommandReceivedModel() {}
 	
 }

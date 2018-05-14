@@ -1089,8 +1089,8 @@ public class Bot {
 	 */
 	public CommandResponseModel sendMessage(CommandReceivedModel commandReceived) {
 		Gson json = new Gson();
-		String username = "josep.recio@outlook.com";
-		String language = "es";
+		String username = commandReceived.getConversationId();
+		String language = commandReceived.getLanguage();
 		String prompt = null;
 		CommandResponseModel commandResponse = new CommandResponseModel();
 
