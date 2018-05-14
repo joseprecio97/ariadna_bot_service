@@ -32,7 +32,21 @@ public class CommandController {
 	private CommandService commandServiceImpl;
 
 	/**
+	 * Recibe las peticiones de Google Assistant
 	 * 
+	 * @param commandReceived
+	 * @return
+	 */
+	@PostMapping("/googleassistant")
+	private ResponseEntity<String> googleAssistantCommand(@RequestBody String commandReceived){
+		System.out.println("POST DATA: " + commandReceived);
+		
+		//Devolvemos la respuesta
+		return ResponseEntity.ok().body("");
+	}
+	
+	/**
+	 * Commando propio de ariadna bot service
 	 * 
 	 * @param commandReceived
 	 * @param bindingResult
