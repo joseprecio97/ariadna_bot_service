@@ -1,0 +1,5 @@
+conocer stock <START:product> cmimo88 <END>
+conocer stock <START:product> ceplayer1 <END>
+conocer stock <START:product> caudeo108BK <END>
+conocer stock <START:product> carquis110 <END>
+conocer stock <START:product> cmimo88 <END> y <START:product> ceplayer1 <END> y <START:product> caudeo108BK <END>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+	<intents>
+		<intent id="buy" language="es,en" >
+			<parameters>
+				<parameter name="qty" required="true" list="false" type="Integer" />
+				<parameter name="color" required="true" list="false" type="String" />
+				<parameter name="product" required="true" list="false" type="String" />
+			</parameters>			
+		</intent>
+		
+		<intent id="know_stock" language="es,en" >
+			<parameters>
+				<parameter name="product" required="true" list="true" type="String" />
+				<parameter name="confirm" required="true" list="false" type="String" />
+			</parameters>
+		</intent>
+		
+		<intent id="send_fact" language="es" >
+			<parameters>
+				<parameter name="num_fact" required="true" list="false" type="Integer" />
+				<parameter name="email" required="true" list="true" type="String" />
+				<parameter name="otherEmail" required="true" list="false" type="String" />
+			</parameters>
+		</intent>
+		
+		<intent id="saludar" language="es">
+			
+		</intent>
+		
+	</intents>
+</config>

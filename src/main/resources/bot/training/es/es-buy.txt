@@ -1,0 +1,9 @@
+Hacer una compra
+Hacer una compra de <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> negro <END>
+Hacer una compra de <START:qty> 2 <END> <START:product> cmimo88 <END> color <START:color> negro <END>
+Hacer un pedido
+Hacer un pedido de <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> negro <END>
+Hacer un pedido de <START:qty> 2 <END> <START:product> cmimo88 <END> color <START:color> negro <END>
+Comprar
+Comprar <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> negro <END>
+Comprar <START:qty> 2 <END> <START:product> cmimo88 <END> color <START:color> negro <END>

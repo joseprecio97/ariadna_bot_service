@@ -1,0 +1,3 @@
+Enviar una factura
+Enviar factura
+Enviar la factura <START:num_fact> 123456 <END> a <START:email> josep.recio@outlook.com <END>
