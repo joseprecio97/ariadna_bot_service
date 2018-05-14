@@ -66,7 +66,7 @@ public class CommandController {
 		googleAssistantResponse.setFulfillmentText(response.getCommand());
 		
 		//Devolvemos la respuesta
-		return ResponseEntity.ok().body(json.toJson(response));
+		return ResponseEntity.ok().body(json.toJson(googleAssistantResponse));
 	}
 	
 	/**
