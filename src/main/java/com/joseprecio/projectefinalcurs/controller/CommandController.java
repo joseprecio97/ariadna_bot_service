@@ -41,12 +41,8 @@ public class CommandController {
 	 */
 	@PostMapping("/googleassistant")
 	private ResponseEntity<String> googleAssistantCommand(@RequestBody GoogleAssistantCommandModel commandReceived){
-		
+		//Objeto JSON
 		Gson json = new Gson();
-		
-		System.out.println("Command: " + commandReceived.getQueryResult().getQueryText());
-		System.out.println("Lenguaje: " + commandReceived.getQueryResult().getLanguageCode().substring(0, 2));
-		System.out.println("Session: " + commandReceived.getSession());
 		
 		//Creamos el modelo de mensaje de Ariadna Bot Service
 		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
