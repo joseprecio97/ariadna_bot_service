@@ -291,6 +291,8 @@ public class Bot {
 			//Leemos el contenido del fichero de configuración
 			File jsonFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD);
 			
+			System.out.println("ruta json: " + jsonFile.getAbsolutePath());
+			
 			//Creamos un BufferedReader
 			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile)));
 			
