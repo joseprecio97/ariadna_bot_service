@@ -1,12 +1,14 @@
 package com.joseprecio.projectefinalcurs.bot;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,15 +24,6 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.joseprecio.projectefinalcurs.ApplicationConstants;
@@ -94,7 +87,140 @@ public class Bot {
 		this.languagePrompts = new HashMap<String, Properties>();
 		this.js = new HashMap<String, Invocable>();
 	}
+		
+	public HashMap<String, Properties> getLanguagePrompts() {
+		return languagePrompts;
+	}
 
+	/**
+	 * Elimina un intent
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public HashMap<String, Intent> removeIntent(String name){
+		intents.remove(name);
+		
+		return intents;
+	}
+	
+	/**
+	 * Añade un intent
+	 * 
+	 * @param newIntent
+	 * @return
+	 * @throws IOException 
+	 */
+	public HashMap<String, Intent> addIntent(Intent newIntent) throws IOException{
+		//Creamos el fichero para cada lenguaje disponible del intent
+		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
+			//Creamos el fichero de entrenamiento
+			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
+					+ "\\" + language + "\\" + language + "-" + newIntent.getId() + ".txt"); 
+			
+			//Creamos el fichero
+			trainingFile.createNewFile();
+			
+			//Añadimos los prompts del intent que estamos creando
+			languagePrompts.get(language).put(newIntent.getId() + "_error", "");
+			languagePrompts.get(language).put(newIntent.getId() + "_new_conversation_error", "");
+			languagePrompts.get(language).put(newIntent.getId() + "_end_conversation_error", "");
+			languagePrompts.get(language).put(newIntent.getId() + "_final_message", "");
+			languagePrompts.get(language).put(newIntent.getId() + "_cancel", "");
+		}
+		
+		//Creamos el fichero de scripts
+		File jsFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
+				+ "\\" + newIntent.getId() + ".js"); 
+		
+		//Creamos el fichero
+		jsFile.createNewFile();
+		
+		//Añadimos el intent al array de intents
+		intents.put(newIntent.getId(), newIntent);
+		
+		//Devolvemos el HashMap con los intents
+		return intents;
+	}
+	
+	/**
+	 * Actualiza un intent
+	 * 
+	 * @param intentSave
+	 * @return
+	 */
+	public HashMap<String, Intent> saveIntent(Intent intentSave){
+		//Actualizamos el intent
+		intents.replace(intentSave.getId(), intentSave);
+		
+		//Devolvemos el HashMap de intent
+		return intents;
+	}
+	
+	/**
+	 * Guarda los intents en el fichero de configuración
+	 * 
+	 * @throws Exception
+	 */
+	public void saveIntents() throws Exception {
+		//Obtenemos el fichero de configuración del bot
+		FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD, false);
+		PrintWriter writer = new PrintWriter(jsonFile);
+
+		Gson json = new Gson();
+		
+		for(Intent intent : intents.values()) {
+			//Guardamos los intents en el fichero
+			writer.println(json.toJson(intent));
+		}
+		
+		//Cerramos el stream
+		writer.close();
+		jsonFile.close();
+	}
+	
+	/**
+	 * Guarda los prompts en disco
+	 * 
+	 * @throws Exception
+	 */
+	public void savePrompts() throws Exception {
+		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
+			//Obtenemos el fichero de prompts
+			FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER
+					+ BotConstants.BOT_PROMPTS_FOLDER + "\\" + language + "\\" + language + "-prompts.json", false);
+			PrintWriter writer = new PrintWriter(jsonFile);
+
+			Gson json = new Gson();
+		
+			//Guardamos los intents en el fichero
+			writer.println(json.toJson(languagePrompts.get(language)));
+		
+			//Cerramos el stream
+			writer.close();
+			jsonFile.close();
+		}
+	}
+	
+	/**
+	 * Devuelve los intents creados en el bot
+	 * 
+	 * @return
+	 */
+	public HashMap<String, Intent> getIntents(){
+		return intents;
+	}
+	
+	/**
+	 * Devuelve un intent
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Intent getIntent(String id) {
+		return intents.get(id);
+	}
+	
 	/**
 	 * Función que carga los scripts JS para cada intent
 	 * 
@@ -117,11 +243,11 @@ public class Bot {
 				String lineaJS = "";
 
 				// Obtenemos el fichero JS del .jar
-				Resource f = new ClassPathResource(BotConstants.BOT_XML_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
+				File f = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
 						+ "\\" + intent.getId() + ".js");
-
+				
 				// Leemos el fichero JS del intent
-				BufferedReader b = new BufferedReader(new InputStreamReader(f.getInputStream()));
+				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
 				while ((lineaJS = b.readLine()) != null) {
 					codigoJS.append(lineaJS);
 				}
@@ -158,101 +284,27 @@ public class Bot {
 	 */
 	private void LoadBotConfig() throws Exception {
 		try {
-			// Creamos un objeto File a partir del XML de configuración del Bot
-			Resource fXmlFile = new ClassPathResource(
-					BotConstants.BOT_XML_CONFIG_FOLDER + BotConstants.BOT_XML_CONFIG_LOAD);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-			// Parseamos y normalizamos el documento XML
-			Document XMLDocument = dBuilder.parse(fXmlFile.getInputStream());
-			XMLDocument.getDocumentElement().normalize();
-
-			// Cargamos los intents
-			NodeList intentsList = XMLDocument.getElementsByTagName("intent");
-
-			// Cargamos cada intent detectado en el XML
-			for (int i = 0; i < intentsList.getLength(); i++) {
-				Node intentNode = intentsList.item(i);
-
-				if (intentNode.getNodeType() == Node.ELEMENT_NODE) {
-					Element intentElement = (Element) intentNode;
-
-					// Creamos el intent
-					Intent newIntent = new Intent();
-
-					// Establecemos los atributos del intent
-					newIntent.setId(intentElement.getAttribute("id"));
-
-					// Obtenemos los lenguajes en que está disponible el intent
-					for (String language : intentElement.getAttribute("language").split(",")) {
-						newIntent.addLanguage(language);
-					}
-
-					// Obtenemos los parametros
-					NodeList parametersList = intentElement.getElementsByTagName("parameter");
-
-					// Recorremos los parámetros
-					for (int j = 0; j < parametersList.getLength(); j++) {
-						Node parameterNode = parametersList.item(j);
-
-						if (parameterNode.getNodeType() == Node.ELEMENT_NODE) {
-							Element parameterElement = (Element) parameterNode;
-
-							// Obtenemos la info del parámetro
-							String name = parameterElement.getAttribute("name");
-							String str_required = parameterElement.getAttribute("required");
-
-							boolean required;
-
-							if (str_required.equals("true")) {
-								required = true;
-							} else {
-								required = false;
-							}
-
-							String str_list = parameterElement.getAttribute("list");
-							String str_type = parameterElement.getAttribute("type");
-
-							// Creamos el parametro
-							Parameter newParameter = new Parameter();
-
-							newParameter.setName(name);
-							newParameter.setRequired(required);
-							newParameter.setType(str_type);
-
-							// Inizializmos el valor del parametro
-							if (str_list.equals("false")) {
-								// EL PARAMETRO NO ES UNA LISTA
-
-								newParameter.setList(false);
-								newParameter.setValue(null);
-							} else {
-								// EL PARAMETRO ES UNA LISTA
-								newParameter.setList(true);
-
-								if (str_type.equals("String")) {
-									newParameter.setValue(new ArrayList<String>());
-								} else if (str_type.equals("Integer")) {
-									newParameter.setValue(new ArrayList<Integer>());
-								}
-							}
-
-							// Añadimos el parametro al intent
-							newIntent.addParameter(newParameter.getName(), newParameter);
-						}
-					}
-
-					// Añadimos el intent en el map de intents
-					intents.put(newIntent.getId(), newIntent);
-
-					Logger.writeConsole(
-							MessageFormat.format(loggerResources.getString("msg_intent_loaded"), newIntent.getId()));
-				}
+			//Objetos
+			String lineaJSON = "";
+			Gson json = new Gson();
+			
+			//Leemos el contenido del fichero de configuración
+			File jsonFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD);
+			
+			//Creamos un BufferedReader
+			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile)));
+			
+			//Leemos el contenido del JSON
+			while ((lineaJSON = b.readLine()) != null) {
+				//Cargamos el intent del bot a partir del JSON leido
+				Intent intentTemp = json.fromJson(lineaJSON, Intent.class);
+				
+				//Añadimos el intent leído en el hashmap
+				intents.put(intentTemp.getId(), intentTemp);
 			}
-
-			// Cerramos el documento
-			fXmlFile.getInputStream().close();
+			
+			//Cerramos el BuffredReader
+			b.close();
 		} catch (Exception e) {
 			// Lanzamos la excepción producida hacia arriba
 			throw e;
@@ -273,26 +325,33 @@ public class Bot {
 			categoryStreams.put(language, new ArrayList<ObjectStream<DocumentSample>>());
 			nameStreams.put(language, new HashMap<String, ObjectStream<NameSample>>());
 			nameFinderME.put(language, new HashMap<String, NameFinderME>());
-			InputStream promptFile = null;
-
+			String lineaJS = null;
+			Gson json = new Gson();
+			Properties prompts = null;
+			
 			try {
 				// Mostramos el fichero de prompts que se va a cargar
 				Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_prompts_file"), language));
 
 				// Creamos un FileInputStream a partir del fichero prompts del lenguaje
-				Resource promptFileResource = new ClassPathResource(BotConstants.BOT_XML_CONFIG_FOLDER
-						+ BotConstants.BOT_PROMPTS_FOLDER + "\\" + language + "\\" + language + "-prompts.xml");
-				promptFile = promptFileResource.getInputStream();
-				Properties prompts = new Properties();
-
-				// Cargamos el fichero de prompts
-				prompts.loadFromXML(promptFile);
-
+				File f = new File(BotConstants.BOT_CONFIG_FOLDER
+						+ BotConstants.BOT_PROMPTS_FOLDER + "\\" + language + "\\" + language + "-prompts.json");
+				
+				// Leemos el fichero JS del intent
+				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+				while ((lineaJS = b.readLine()) != null) {
+					//Cargamos el json
+					prompts = json.fromJson(lineaJS, Properties.class);
+				}
+				b.close();
+				
+				//Comprovamos si el objeto properties no es nulo
+				if(prompts == null) {
+					prompts = new Properties();
+				}
+				
 				// Ponemos el properties con los prompts en el mapa
 				languagePrompts.put(language, prompts);
-
-				// Cerramos el recurso
-				promptFileResource.getInputStream().close();
 
 				// Mostramos que se ha cargado correctamente el fichero de prompts
 				Logger.writeConsole(
@@ -321,28 +380,28 @@ public class Bot {
 		// Array de streams de string
 		ObjectStream<String> lineStream = null;
 
-		Resource trainingFolder = new ClassPathResource(
-				BotConstants.BOT_XML_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER);
+		File trainingFolder = new File(
+				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER);
 
 		if (!trainingFolder.exists()) {
 			// No existe el directorio training en la carpeta dónde se encuentra el xml del
 			// bot
-			throw new NotBotTrainingFolderException(BotConstants.BOT_XML_CONFIG_LOAD);
+			throw new NotBotTrainingFolderException(BotConstants.BOT_CONFIG_LOAD);
 		}
 
 		// Recorremos todos los intents detectados en ese fichero de configuración
 		for (Intent intent : intents.values()) {
 			for (String language : intent.getLanguages()) {
-				Resource languageTrainingFolder = new ClassPathResource(
-						BotConstants.BOT_XML_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language);
+				File languageTrainingFolder = new File(
+						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language);
 
 				if (!(languageTrainingFolder.exists())) {
 					// No existe el directorio con el idioma para el training
 					throw new NotLanguageIntentTrainingException(intent.getId(), language);
 				}
 
-				Resource intentTraining = new ClassPathResource(
-						BotConstants.BOT_XML_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language + "\\"
+				File intentTraining = new File(
+						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language + "\\"
 								+ language + "-" + intent.getId() + ".txt");
 
 				if (!(intentTraining.exists())) {
@@ -353,7 +412,7 @@ public class Bot {
 				// **************************** Document Sample
 				// ************************************
 				// Leemos el fichero y devolvemos las líneas como String
-				lineStream = new PlainTextByLineStream(intentTraining.getInputStream(), "UTF-8");
+				lineStream = new PlainTextByLineStream(new FileInputStream(intentTraining), "UTF-8");
 
 				// Eliminamos las entidades de las líneas leidas
 				ObjectStream<DocumentSample> documentSampleStream = new IntentDocumentSampleStream(intent.getId(),
@@ -365,7 +424,7 @@ public class Bot {
 				// **************************** Name Sample
 				// *************************************
 				// Leemos el fichero y devolvemos las líneas como String
-				lineStream = new PlainTextByLineStream(intentTraining.getInputStream(), "UTF-8");
+				lineStream = new PlainTextByLineStream(new FileInputStream(intentTraining), "UTF-8");
 
 				// Convierte los String leidos a NameSample
 				ObjectStream<NameSample> nameSampleStream = new NameSampleDataStream(lineStream);
@@ -375,7 +434,7 @@ public class Bot {
 				nameFinderME.get(language).put(intent.getId(), null);
 
 				// Cerramos el stream
-				intentTraining.getInputStream().close();
+				lineStream.close();
 			}
 		}
 	}
@@ -439,11 +498,11 @@ public class Bot {
 
 		// Cargamos la configuración del bot
 		Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_config_load"),
-				BotConstants.BOT_XML_CONFIG_LOAD));
+				BotConstants.BOT_CONFIG_LOAD));
 		LoadBotConfig();
 		Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_config_loaded"),
-				BotConstants.BOT_XML_CONFIG_LOAD));
-
+				BotConstants.BOT_CONFIG_LOAD));
+		
 		// Cargamos los scripts de negocio del bot
 		Logger.writeConsole(loggerResources.getString("msg_init_js_load"));
 		LoadJSScripts();
@@ -1039,6 +1098,12 @@ public class Bot {
 						// Obtenemos el mensaje de que el intent se ha completado correctamente
 						prompt = languagePrompts.get(conversation.getLanguage())
 								.getProperty(conversation.getId() + BotConstants.BOT_ENDCONVERSATIONMESSAGE_SUFIX);
+						
+						//Comprovamos si nos llega una conversación en la respuesta
+						if(response.getConversation() != null) {
+							//Actualizamos la conversacion
+							conversations.replace(conversation.getUsername(), response.getConversation());
+						}
 					}
 
 					// Si hemos recibido algun prompt en la respuesta del script

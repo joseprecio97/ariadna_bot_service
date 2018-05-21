@@ -1,7 +1,6 @@
 package com.joseprecio.projectefinalcurs.utils;
 
 import java.sql.Timestamp;
-import java.text.MessageFormat;
 
 /**
  * Classe para escribir log

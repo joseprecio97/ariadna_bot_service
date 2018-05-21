@@ -2,3 +2,8 @@ spring:
   thymeleaf:
     cache: false
     mode: LEGACYHTML5
+    encoding: utf-8
+    
+auth:
+  username: admin
+  password: admin

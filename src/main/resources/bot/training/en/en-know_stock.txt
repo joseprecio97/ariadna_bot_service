@@ -1,5 +1,0 @@
-how many stocks there are of <START:product> cmimo88 <END>
-find stock of <START:product> cmimo88 <END>
-<START:product> mimo88 <END> stock
-existencias <START:product> cmimo88 <END>
-Available units <START:product> cmimo88 <END>

@@ -1,9 +1,0 @@
-To make a purchase
-Make a purchase of <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END>
-Make a purchase of <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END> color
-Make an order
-Make an order of <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END>
-Make an order of <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END> color
-To buy
-Buy <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END>
-Buy <START:qty> 2 <END> <START:product> cmimo88 <END> <START:color> black <END> color
