@@ -9,7 +9,7 @@ package com.joseprecio.projectefinalcurs.bot;
 
 public class BotConstants {
 
-	public static final String BOT_CONFIG_FOLDER = "bot\\";
+	public static final String BOT_CONFIG_FOLDER = "bot//";
 	public static final String BOT_CONFIG_LOAD = "bot.json";
 	public static final String BOT_TRAINING_FOLDER = "training";
 	public static final String BOT_PROMPTS_FOLDER = "prompts";

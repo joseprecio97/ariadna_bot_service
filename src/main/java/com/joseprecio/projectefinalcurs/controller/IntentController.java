@@ -625,14 +625,14 @@ public class IntentController {
 		
 		//Eliminamos el script
 		File scriptFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-				+ "\\" + intentRemove.getId() + ".js");
+				+ "//" + intentRemove.getId() + ".js");
 		scriptFile.delete();
 		
 		//Recorremos todos los lenguajes
 		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
 			//Eliminamos el fichero de entrenamiento
 			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
-					+ "\\" + language + "\\" + language + "-" + intentRemove.getId() + ".txt");
+					+ "//" + language + "//" + language + "-" + intentRemove.getId() + ".txt");
 			trainingFile.delete();
 			
 			// Obtenemos los prompts del bot

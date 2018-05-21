@@ -116,7 +116,7 @@ public class Bot {
 		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
 			//Creamos el fichero de entrenamiento
 			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
-					+ "\\" + language + "\\" + language + "-" + newIntent.getId() + ".txt"); 
+					+ "//" + language + "//" + language + "-" + newIntent.getId() + ".txt"); 
 			
 			//Creamos el fichero
 			trainingFile.createNewFile();
@@ -131,7 +131,7 @@ public class Bot {
 		
 		//Creamos el fichero de scripts
 		File jsFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-				+ "\\" + newIntent.getId() + ".js"); 
+				+ "//" + newIntent.getId() + ".js"); 
 		
 		//Creamos el fichero
 		jsFile.createNewFile();
@@ -188,7 +188,7 @@ public class Bot {
 		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
 			//Obtenemos el fichero de prompts
 			FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER
-					+ BotConstants.BOT_PROMPTS_FOLDER + "\\" + language + "\\" + language + "-prompts.json", false);
+					+ BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//" + language + "-prompts.json", false);
 			PrintWriter writer = new PrintWriter(jsonFile);
 
 			Gson json = new Gson();
@@ -244,7 +244,7 @@ public class Bot {
 
 				// Obtenemos el fichero JS del .jar
 				File f = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-						+ "\\" + intent.getId() + ".js");
+						+ "//" + intent.getId() + ".js");
 				
 				// Leemos el fichero JS del intent
 				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
@@ -337,7 +337,7 @@ public class Bot {
 
 				// Creamos un FileInputStream a partir del fichero prompts del lenguaje
 				File f = new File(BotConstants.BOT_CONFIG_FOLDER
-						+ BotConstants.BOT_PROMPTS_FOLDER + "\\" + language + "\\" + language + "-prompts.json");
+						+ BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//" + language + "-prompts.json");
 				
 				// Leemos el fichero JS del intent
 				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
@@ -395,7 +395,7 @@ public class Bot {
 		for (Intent intent : intents.values()) {
 			for (String language : intent.getLanguages()) {
 				File languageTrainingFolder = new File(
-						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language);
+						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//" + language);
 
 				if (!(languageTrainingFolder.exists())) {
 					// No existe el directorio con el idioma para el training
@@ -403,7 +403,7 @@ public class Bot {
 				}
 
 				File intentTraining = new File(
-						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\" + language + "\\"
+						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//" + language + "//"
 								+ language + "-" + intent.getId() + ".txt");
 
 				if (!(intentTraining.exists())) {

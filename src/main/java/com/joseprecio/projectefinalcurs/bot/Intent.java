@@ -67,7 +67,7 @@ public class Intent {
 		
 		// Cargamos el script
 		File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-			+ "\\" + id + ".js");
+			+ "//" + id + ".js");
 
 		// Leemos el script
 		BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(trainingFile)));
@@ -92,7 +92,7 @@ public class Intent {
 	public void editScript(String script) throws IOException {
 		// Obtenemos el script del intent
 		FileWriter scriptFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-				+ "\\" + id + ".js", false);
+				+ "//" + id + ".js", false);
 		PrintWriter writer = new PrintWriter(scriptFile);
 
 		// Guardamos el script en el fichero
@@ -116,7 +116,7 @@ public class Intent {
 
 		// Obtenemos el fichero de frases de entrenamiento
 		FileWriter trainingFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
-				+ "\\" + language + "\\" + language + "-" + id + ".txt", false);
+				+ "//" + language + "//" + language + "-" + id + ".txt", false);
 		PrintWriter writer = new PrintWriter(trainingFile);
 
 		// Recorremos todas las training phrases del idioma correspondiente
@@ -143,7 +143,7 @@ public class Intent {
 	public void addTrainingPhrase(String language, String phrase) throws IOException {
 		// Obtenemos el fichero de frases de entrenamiento
 		FileWriter trainingFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
-				+ "\\" + language + "\\" + language + "-" + id + ".txt", true);
+				+ "//" + language + "//" + language + "-" + id + ".txt", true);
 		PrintWriter writer = new PrintWriter(trainingFile);
 
 		// Guardamos los intents en el fichero
@@ -170,8 +170,8 @@ public class Intent {
 		// Recorremos todos los lenguajes
 		for (String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
 			// Creamos el fichero de entrenamiento
-			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "\\"
-					+ language + "\\" + language + "-" + id + ".txt");
+			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//"
+					+ language + "//" + language + "-" + id + ".txt");
 
 			// Array de frases de entrenamiento
 			ArrayList<String> phrases = new ArrayList<String>();
