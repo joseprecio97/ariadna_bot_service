@@ -1,5 +1,6 @@
 package com.joseprecio.projectefinalcurs;
 
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.Locale.Category;
@@ -91,6 +92,8 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 		Bot bot = context.getBean(Bot.class);
 
 		try {
+			System.out.println("Ruta: " + new File(".").getAbsolutePath());
+			
 			// Inicializamos el bot
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ loggerResources.getString("msg_init_bot_intentTraining_load"));
