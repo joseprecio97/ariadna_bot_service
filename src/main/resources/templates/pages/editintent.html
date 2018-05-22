@@ -35,10 +35,26 @@
 				</div>
 			</div>
 
+			<div class="row" th:if="${parameteredited}">
+				<div class="col-lg-12">
+					<div class="alert alert-success">
+						<span th:text="#{parameteredited}"></span>
+					</div>
+				</div>
+			</div>
+
 			<div class="row" th:if="${parameteradded}">
 				<div class="col-lg-12">
 					<div class="alert alert-success">
 						<span th:text="#{parameteradded}"></span>
+					</div>
+				</div>
+			</div>
+
+			<div class="row" th:if="${trainingphraseedited}">
+				<div class="col-lg-12">
+					<div class="alert alert-success">
+						<span th:text="#{trainingphraseedited}"></span>
 					</div>
 				</div>
 			</div>
@@ -93,9 +109,14 @@
 			</div>
 
 			<!-- /.row -->
+			<a name="languages" id="languages"></a>
+			<div class="ancla-separator"></div>
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel panel-default">
+						<div class="panel-heading">
+							<span th:text="#{languages}"></span>
+						</div>
 						<div class="panel-body">
 							<div class="row">
 								<div class="col-lg-12">
@@ -104,12 +125,10 @@
 										th:object="${intent}" method="post">
 										<div class="form-group"
 											th:class="${#fields.hasErrors('languages')} ? has-error">
-											<label th:text="#{languages}"></label> <label
-												class="checkbox-inline"
-												th:each="lang : ${availableLanguages}"> <input
-												type="checkbox" th:field="*{languages}" th:value="${lang}">
-												<label th:text="${lang}"></label>
-											</label>
+											<div class="checkbox-inline" th:each="lang : ${availableLanguages}" >
+											    <input type="checkbox" data-toggle="toggle" th:field="*{languages}" th:value="${lang}">
+											    <span th:text="${lang}" ></span>
+											</div>
 											<p class="help-block"
 												th:if="${#fields.hasErrors('languages')}"
 												th:text="#{errorlanguages}"></p>
@@ -117,8 +136,6 @@
 										<br />
 										<button type="submit" class="btn btn-default"
 											th:text="#{save}"></button>
-										<button type="reset" class="btn btn-default"
-											th:text="#{reset}"></button>
 									</form>
 								</div>
 							</div>
@@ -126,6 +143,8 @@
 					</div>
 				</div>
 			</div>
+			<a name="training" id="training"></a>
+			<div class="ancla-separator"></div>
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel panel-default">
@@ -138,33 +157,25 @@
 							<ul class="nav nav-pills">
 								<!-- <li class="active"><a href="#home-pills" data-toggle="tab">Home</a>
                                 </li>-->
-								<li th:each="language : ${intent.languages}"><a
+								<li th:each="language,iter : ${intent.languages}" th:class="${iter.index == 0} ? active" ><a
 									th:href="@{'#'+${language}}" data-toggle="tab"><span
 										th:text="${language}"></span></a></li>
 							</ul>
 
 							<!-- Tab panes -->
 							<div class="tab-content">
-								<div class="tab-pane fade in active">
-									<h4 th:text="${training}"></h4>
-									<p th:text="#{traininginstructions}"></p>
-								</div>
-								<div class="tab-pane fade" th:id="${language}"
-									th:each="language : ${intent.languages}">
+								<div class="tab-pane" th:id="${language}"
+									th:each="language,iter : ${intent.languages}"  
+									th:classappend="${iter.index == 0} ? active">
 									<br />
 									<form role="form"
 										th:action="@{'/intents/' + ${intent.id} + '/addtrainingphrase?lang=' + ${locale}}"
 										th:object="${trainingphrase}" method="post">
 										<div class="row">
-											<div class="form-group col-lg-10">
-												<input class="form-control" th:field="*{phrase}">
-												<p class="help-block" th:text="#{typenewintentphrase}"></p>
+											<div class="form-group col-lg-12">
+												<input class="form-control" th:field="*{phrase}" th:placeholder="#{typenewintentphrase}" >
 												<input type="hidden" name="language" th:value="${language}">
 												<input type="hidden" name="id" th:value="${intent.id}">
-											</div>
-											<div class="col-lg-2">
-												<button type="submit" class="btn btn-primary"
-													th:text="#{save}"></button>
 											</div>
 										</div>
 									</form>
@@ -194,7 +205,16 @@
 														</button>
 													</form>
 												</td>
-												<td th:text="${phrase}"></td>
+												<td>
+													<form role="form"
+														th:action="@{'/intents/' + ${intent.id} + '/edittrainingphrase?lang=' + ${locale}}"
+														th:object="${trainingphrase}" method="post">
+														<input class="form-control no-border-input" name="phrase" th:value="${phrase}" >
+														<input type="hidden" name="oldPhrase" th:value="${phrase}" />
+														<input type="hidden" name="language" th:value="${language}"> 
+														<input type="hidden" name="id" th:value="${intent.id}">
+													</form>
+												</td>
 											</tr>
 										</tbody>
 									</table>
@@ -206,6 +226,8 @@
 					<!-- /.panel -->
 				</div>
 			</div>
+			<a name="parameters" id="parameters"></a>
+			<div class="ancla-separator"></div>
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel panel-default">
@@ -221,12 +243,16 @@
 								th:object="${parameter}" method="post">
 								<input type="hidden" name="id" th:value="${intent.id}" />
 								
+								<p class="help-block" th:text="#{newparameterinfo}" ></p>
 								<div class="row">
-									<div class="form-group col-lg-2">
+									<div class="form-group col-lg-3">
 										<input class="form-control" th:field="*{name}" th:placeholder="#{name}" />
 									</div>
 									<div class="form-group col-lg-2">
-										<input type="checkbox" th:field="*{required}" value="" th:text="#{required}">
+										<div class="checkbox-inline" >
+											<input type="checkbox" data-toggle="toggle" th:field="*{required}" >
+											<span th:text="#{required}" ></span>
+										</div>
 									</div>
 									<div class="form-group col-lg-4">
 										<select class="form-control" th:field="*{type}" >
@@ -235,15 +261,18 @@
                                     	</select>
 									</div>
 									<div class="form-group col-lg-2">
-										<input type="checkbox" th:field="*{list}" value="" th:text="#{list}">
+										<div class="checkbox-inline" >
+											<input type="checkbox" data-toggle="toggle" th:field="*{list}" >
+											<span th:text="#{list}" ></span>
+										</div>
 									</div>
-									<div class="col-lg-2">
-										<button type="submit" class="btn btn-primary"
-											th:text="#{save}">
+									<div class="col-lg-1">
+										<button type="submit" class="btn btn-primary btn-circle" 
+											data-toggle="modal" >
+											<i class="fa fa-plus"></i>
 										</button>
 									</div>
 								</div>
-								<p class="help-block" th:text="#{newparameterinfo}" ></p>
 							</form>
 							<br/>
 							<table width="100%"
@@ -252,10 +281,7 @@
 								<thead>
 									<tr>
 										<th style="width: 15%;" th:text="#{actions}"></th>
-										<th th:text="#{name}"></th>
-										<th th:text="#{required}"></th>
-										<th th:text="#{type}"></th>
-										<th th:text="#{list}"></th>
+										<th th:text="#{info}"></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -286,19 +312,15 @@
 			                                        </div>
 			                                        <div class="modal-body">
 			                                            <ul class="nav nav-pills">
-															<!-- <li class="active"><a href="#home-pills" data-toggle="tab">Home</a>
-							                                </li>-->
-															<li th:each="language : ${intent.languages}"><a
+															<li th:each="language,iter : ${intent.languages}" 
+																th:classappend="${iter.index == 0} ? active"><a
 																th:href="@{'#prompts_'+${parameter.name}+${language}}" data-toggle="tab"><span
 																	th:text="${language}"></span></a></li>
 														</ul>
 														<div class="tab-content">
-															<div class="tab-pane fade in active">
-																<h4 th:text="${training}"></h4>
-																<p th:text="#{promptinstructions}"></p>
-															</div>
-															<div class="tab-pane fade" th:id="'prompts_'+${parameter.name} + ${language}"
-																th:each="language : ${intent.languages}">
+															<div class="tab-pane" th:id="'prompts_'+${parameter.name} + ${language}"
+																th:each="language,iter : ${intent.languages}"
+																th:classappend="${iter.index == 0} ? active">
 																<br />
 																<form role="form" method="post"
 																	th:action="@{'/intents/' + ${intent.id} + '/saveparameterprompt?lang=' + ${locale}}" >
@@ -307,24 +329,21 @@
 																	<input type="hidden" name="parametername" th:value="${parameter.name}" />
 																	
 																	<div class="form-group">
-										                            	<label th:text="#{promptparameter}"></label>
+										                            	<p class="help-block" th:text="#{promptparameterinf}"></p>
 										                                <input class="form-control" name="promptparameter"
 										                                	th:value="${prompts.get(language).get(intent.id + '_' + parameter.name)}" >
-										                                <p class="help-block" th:text="#{promptparameterinf}"></p>
 										                            </div>
 										                            
 										                            <div class="form-group">
-										                            	<label th:text="#{promptbadvalue}"></label>
+										                            	<p class="help-block" th:text="#{promptbadvalueinf}"></p>
 										                                <input class="form-control" name="promptbadvalue"
 										                                	th:value="${prompts.get(language).get(intent.id + '_' + parameter.name + '_bad_value')}" >
-										                                <p class="help-block" th:text="#{promptbadvalueinf}"></p>
 										                            </div>
 										                            
 										                            <div class="form-group">
-										                            	<label th:text="#{promptinvalid}"></label>
+										                            	<p class="help-block" th:text="#{promptinvalidinf}"></p>
 										                                <input class="form-control" name="promptinvalid"
 										                                	th:value="${prompts.get(language).get(intent.id + '_' + parameter.name + '_invalid')}" >
-										                                <p class="help-block" th:text="#{promptinvalidinf}"></p>
 										                            </div>
 										                            
 										                            <br/>
@@ -342,13 +361,42 @@
 			                                <!-- /.modal-dialog -->
 			                            </div>
 			                            <!-- /.modal -->
-										<td th:text="${parameter.name}"></td>
 										<td>
-											<input type="checkbox" th:checked="${parameter.required}" disabled />
-										</td>
-										<td th:text="${parameter.type}"></td>
-										<td>
-											<input type="checkbox" th:checked="${parameter.list}" disabled />
+											<form role="form"
+												th:action="@{'/intents/' + ${intent.id} + '/editparameter?lang=' + ${locale}}"
+												th:object="${parameter}" method="post">
+												<input type="hidden" name="id" th:value="${intent.id}" />
+												<input type="hidden" name="name" th:value="${parameter.name}" />												
+												<div class="form-group col-lg-3">
+													<input class="form-control no-border-input" th:placeholder="#{name}" 
+													 th:value="${parameter.name}" readonly=true />
+												</div>
+												<div class="form-group col-lg-3">
+													<div class="checkbox-inline" >
+														<input type="checkbox" data-toggle="toggle" 
+														 name="required" th:checked="${parameter.required}" >
+														 <span th:text="#{required}" ></span>
+													</div>
+												</div>
+												<div class="form-group col-lg-2">
+													<select class="form-control" name="type" >
+			                                        	<option th:text="#{integer}" th:selected="(${parameter.type} == #{integer})"  th:value="#{integer}" ></option>
+			                                            <option th:text="#{string}" th:selected="(${parameter.type} == #{string})" th:value="#{string}"></option>
+			                                    	</select>
+												</div>
+												<div class="form-group col-lg-3">
+													<div class="checkbox-inline" >
+														<input type="checkbox" data-toggle="toggle" 
+														name="list" th:checked="${parameter.list}" >
+														<span th:text="#{list}" ></span>
+													</div>
+												</div>
+												<div class="form-group col-lg-1">
+													<button type="submit" class="btn btn-primary btn-circle pull-right" >
+														<i class="fa fa-save"></i>
+													</button>
+												</div>
+											</form>	
 										</td>
 									</tr>
 								</tbody>
@@ -359,6 +407,8 @@
 					<!-- /.panel -->
 				</div>
 			</div>
+			<a name="prompts" id="prompts"></a>
+			<div class="ancla-separator"></div>
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel panel-default">
@@ -368,19 +418,15 @@
 						<!-- /.panel-heading -->
 						<div class="panel-body">
 							<ul class="nav nav-pills">
-								<!-- <li class="active"><a href="#home-pills" data-toggle="tab">Home</a>
-                                </li>-->
-								<li th:each="language : ${intent.languages}"><a
+								<li th:each="language,iter : ${intent.languages}" 
+								th:classappend="${iter.index == 0} ? active" ><a
 									th:href="@{'#prompts_'+${language}}" data-toggle="tab"><span
 										th:text="${language}"></span></a></li>
 							</ul>
-							<div class="tab-content">
-								<div class="tab-pane fade in active">
-									<h4 th:text="${training}"></h4>
-									<p th:text="#{promptinstructions}"></p>
-								</div>
-								<div class="tab-pane fade" th:id="'prompts_' + ${language}"
-									th:each="language : ${intent.languages}">
+							<div class="tab-content">								
+								<div class="tab-pane" th:id="'prompts_' + ${language}"
+									th:each="language, iter : ${intent.languages}" 
+									th:classappend="${iter.index == 0} ? active" >
 									<br />
 									<form role="form" method="post"
 										th:action="@{'/intents/' + ${intent.id} + '/saveprompt?lang=' + ${locale}}" >
@@ -388,34 +434,29 @@
 										<input type="hidden" name="language" th:value="${language}" />
 										
 										<div class="form-group">
-			                            	<label th:text="#{prompterror}"></label>
+			                            	<p class="help-block" th:text="#{promterrorinf}"></p>
 			                                <input class="form-control" name="prompterror"
 			                                	th:value="${prompts.get(language).get(intent.id + '_error')}" >
-			                                <p class="help-block" th:text="#{promterrorinf}"></p>
 			                            </div>
 			                            <div class="form-group">
-			                            	<label th:text="#{promptnewconversationerror}"></label>
+											<p class="help-block" th:text="#{promptnewconversationerrorinf}"></p>
 			                                <input class="form-control" name="promptnewconversationerror"
 			                                	th:value="${prompts.get(language).get(intent.id + '_new_conversation_error')}" >
-			                                <p class="help-block" th:text="#{promptnewconversationerrorinf}"></p>
 			                            </div>
 			                            <div class="form-group">
-			                            	<label th:text="#{promptendconversationerror}"></label>
+			                            	<p class="help-block" th:text="#{promptendconversationerrorinf}"></p>
 			                                <input class="form-control" name="promptendconversationerror" 
 			                                	 th:value="${prompts.get(language).get(intent.id + '_end_conversation_error')}" >
-			                                <p class="help-block" th:text="#{promptendconversationerrorinf}"></p>
 			                            </div>
 			                            <div class="form-group">
-			                            	<label th:text="#{promptendconversation}"></label>
+			                            	<p class="help-block" th:text="#{promptendconversationinf}"></p>
 			                                <input class="form-control" name="promptfinalmessage" 
 			                                	th:value="${prompts.get(language).get(intent.id + '_final_message')}" >
-			                                <p class="help-block" th:text="#{promptendconversationinf}"></p>
 			                            </div>
 			                            <div class="form-group">
-			                            	<label th:text="#{promptcancel}"></label>
+			                            	<p class="help-block" th:text="#{promptcancelinf}"></p>
 			                                <input class="form-control" name="promptcancel" 
 			                                	 th:value="${prompts.get(language).get(intent.id + '_cancel')}" >
-			                                <p class="help-block" th:text="#{promptcancelinf}"></p>
 			                            </div>
 			                            <br/>
 			                            <button type="submit" class="btn btn-default" th:text="#{save}"></button>
@@ -426,6 +467,8 @@
 					</div>
 				</div>
 			</div>
+			<a name="script" id="script"></a>
+			<div class="ancla-separator"></div>
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel panel-default">
@@ -466,6 +509,9 @@
 		<script th:src="@{/codemirror/addon/hint/javascript-hint.js}"></script>
 		<script th:src="@{/codemirror/mode/javascript/javascript.js}"></script>
 		<script th:src="@{/codemirror/mode/markdown/markdown.js}"></script>
+
+		<!-- Bootstrap toogle -->
+		<script th:src="@{/bootstrap-toggle/bootstrap-toggle.js}"></script>
 
 		<!-- Page-Level Demo Scripts - Tables - Use for reference -->
 		<script>

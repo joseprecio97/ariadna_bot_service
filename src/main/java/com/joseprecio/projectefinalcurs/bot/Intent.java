@@ -36,24 +36,24 @@ public class Intent {
 	 * @param name
 	 * @return
 	 */
-	public LinkedHashMap<String, Parameter> removeParameter(String name){
+	public LinkedHashMap<String, Parameter> removeParameter(String name) {
 		parameters.remove(name);
-		
+
 		return parameters;
 	}
-	
+
 	/**
 	 * Añade un parámetro a un intent
 	 * 
 	 * @param newParameter
 	 * @return
 	 */
-	public LinkedHashMap<String, Parameter> addParameter(Parameter newParameter){
+	public LinkedHashMap<String, Parameter> addParameter(Parameter newParameter) {
 		parameters.put(newParameter.getName(), newParameter);
-		
+
 		return parameters;
 	}
-	
+
 	/**
 	 * Obtiene el script del intent
 	 * 
@@ -61,13 +61,13 @@ public class Intent {
 	 * @throws IOException
 	 */
 	public String getScript() throws IOException {
-		//Objetos
+		// Objetos
 		String linea = null;
 		StringBuilder script = new StringBuilder();
-		
+
 		// Cargamos el script
-		File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-			+ "//" + id + ".js");
+		File trainingFile = new File(
+				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER + "//" + id + ".js");
 
 		// Leemos el script
 		BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(trainingFile)));
@@ -79,10 +79,10 @@ public class Intent {
 		// Cerramos el buffer
 		b.close();
 
-		//Devolvemos el script
+		// Devolvemos el script
 		return script.toString();
 	}
-	
+
 	/**
 	 * Edita el script de un intent
 	 * 
@@ -91,8 +91,8 @@ public class Intent {
 	 */
 	public void editScript(String script) throws IOException {
 		// Obtenemos el script del intent
-		FileWriter scriptFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-				+ "//" + id + ".js", false);
+		FileWriter scriptFile = new FileWriter(
+				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER + "//" + id + ".js", false);
 		PrintWriter writer = new PrintWriter(scriptFile);
 
 		// Guardamos el script en el fichero
@@ -152,6 +152,48 @@ public class Intent {
 		// Cerramos el stream
 		writer.close();
 		trainingFile.close();
+	}
+
+	/**
+	 * Edita una frase de entrenamiento
+	 * 
+	 * @param language
+	 * @param oldPhrase
+	 * @param newPhrase
+	 * @throws IOException
+	 */
+	public void editTrainingPhrase(String language, String oldPhrase, String newPhrase) throws IOException {
+		// Obtenemos el fichero de entrenamiento
+		File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//" + language
+				+ "//" + language + "-" + id + ".txt");
+
+		// Array de frases de entrenamiento
+		ArrayList<String> phrases = new ArrayList<String>();
+
+		String linea = null;
+		
+		// Leemos el fichero de entrenamiento
+		BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(trainingFile)));
+		while ((linea = b.readLine()) != null) {
+			phrases.add(linea);
+		}
+
+		// Cerramos el buffer
+		b.close();
+		
+		//Eliminamos el fichero de entrenamiento
+		trainingFile.delete();
+		
+		//Recorremos todas las frases de entrenamiento leidas
+		for(String phrase : phrases) {
+			//Comprovamos si es la frase que queremos actualizar
+			if(phrase.equals(oldPhrase)) {
+				//Actualizamos la frase
+				addTrainingPhrase(language, newPhrase);
+			}else {
+				addTrainingPhrase(language, phrase);
+			}
+		}
 	}
 
 	/**

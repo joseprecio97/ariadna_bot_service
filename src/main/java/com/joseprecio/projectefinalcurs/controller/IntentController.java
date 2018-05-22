@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.joseprecio.projectefinalcurs.bot.BotConstants;
 import com.joseprecio.projectefinalcurs.bot.Intent;
 import com.joseprecio.projectefinalcurs.bot.Parameter;
+import com.joseprecio.projectefinalcurs.model.EditTrainingPhraseForm;
 import com.joseprecio.projectefinalcurs.model.IntentForm;
 import com.joseprecio.projectefinalcurs.model.IntentPromptsForm;
 import com.joseprecio.projectefinalcurs.model.ParameterForm;
@@ -298,6 +299,49 @@ public class IntentController {
 		return editModel(model, intent, new TrainingPhraseForm(), new ParameterForm(), null, "trainingphraseadded");
 	}
 
+	@GetMapping("{id}/edittrainingphrase")
+	public String edittrainingphrase(@PathVariable(required = true) String id, Model model) throws IOException {
+		// Devolvemos la vista
+		return editModel(model, commandServiceImpl.getIntent(id), new TrainingPhraseForm(), new ParameterForm(), null, null);
+	}
+	
+	/**
+	 * Edita una frase de entrenamiento
+	 * 
+	 * @param id
+	 * @param trainingPhrase
+	 * @param bindingResult
+	 * @param model
+	 * @return
+	 * @throws IOException
+	 */
+	@PostMapping("{id}/edittrainingphrase")
+	public String edittrainingphrase(@PathVariable(required = true) String id,
+			@Valid @ModelAttribute("trainingphrase") EditTrainingPhraseForm trainingPhrase, BindingResult bindingResult,
+			Model model) throws IOException {
+
+		// Validamos los datos del formulario
+		if (bindingResult.hasErrors()) {
+			// Obtenemos los errores de validación
+			ArrayList<String> validationErrors = new ArrayList<String>();
+
+			for (ObjectError error : bindingResult.getAllErrors()) {
+				validationErrors.add(((FieldError) error).getField() + ": " + error.getDefaultMessage());
+			}
+
+			// Devolvemos la vista
+			return editModel(model, commandServiceImpl.getIntent(trainingPhrase.getId()), trainingPhrase,
+					new ParameterForm(), validationErrors, null);
+		}
+
+		// Añadimos la frase de entrenamiento al intent
+		Intent intent = commandServiceImpl.getIntent(trainingPhrase.getId());
+		intent.editTrainingPhrase(trainingPhrase.getLanguage(), trainingPhrase.getOldPhrase(), trainingPhrase.getPhrase());
+
+		// Devolvemos la vista
+		return editModel(model, intent, new TrainingPhraseForm(), new ParameterForm(), null, "trainingphraseedited");
+	}
+	
 	@GetMapping("{id}/removetrainingphrase")
 	public String removetrainingphrase(@PathVariable(required = true) String id, Model model) throws IOException {
 		// Devolvemos la vista
@@ -452,6 +496,72 @@ public class IntentController {
 		return editModel(model, intent, new TrainingPhraseForm(), new ParameterForm(), null, "parameteradded");
 	}
 
+	@GetMapping("{id}/editparameter")
+	public String editparameter(@PathVariable(required = true) String id, Model model) throws Exception {
+		// Devolvemos la vista
+		return editModel(model, commandServiceImpl.getIntent(id), new TrainingPhraseForm(), new ParameterForm(), null, null);
+	}
+	
+	/**
+	 * Edita un parámetro
+	 * 
+	 * @param id
+	 * @param parameter
+	 * @param bindingResult
+	 * @param model
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("{id}/editparameter")
+	public String editparameter(@PathVariable(required = true) String id,
+			@Valid @ModelAttribute("parameter") ParameterForm parameter, BindingResult bindingResult, Model model)
+			throws Exception {
+
+		// Validamos los datos del formulario
+		if (bindingResult.hasErrors()) {
+			// Obtenemos los errores de validación
+			ArrayList<String> validationErrors = new ArrayList<String>();
+
+			for (ObjectError error : bindingResult.getAllErrors()) {
+				validationErrors.add(((FieldError) error).getField() + ": " + error.getDefaultMessage());
+			}
+
+			// Devolvemos la vista
+			return editModel(model, commandServiceImpl.getIntent(parameter.getId()), new TrainingPhraseForm(),
+					parameter, validationErrors, null);
+		}
+
+		// Obtenemos el intent
+		Intent intent = commandServiceImpl.getIntent(parameter.getId());
+		
+		// Obtenemos el parametro que queremos editar
+		Parameter editParameter = intent.getParameters().get(parameter.getName());
+
+		//Editamos el parámetro
+		editParameter.setRequired(parameter.isRequired());
+		editParameter.setType(parameter.getType());
+		editParameter.setList(parameter.isList());
+
+		// Inizializmos el valor del parametro
+		if (!editParameter.isList()) {
+			// EL PARAMETRO NO ES UNA LISTA
+			editParameter.setValue(null);
+		} else {
+			// EL PARAMETRO ES UNA LISTA
+			if (editParameter.getType().equals("String")) {
+				editParameter.setValue(new ArrayList<String>());
+			} else if (editParameter.getType().equals("Integer")) {
+				editParameter.setValue(new ArrayList<Integer>());
+			}
+		}
+		
+		// Guardamos el intent
+		commandServiceImpl.saveIntent(intent);
+
+		// Devolvemos la vista
+		return editModel(model, intent, new TrainingPhraseForm(), new ParameterForm(), null, "parameteredited");
+	}
+	
 	@GetMapping("{id}/removeparameter")
 	public String removeparameter(@PathVariable(required = true) String id, Model model) throws Exception {
 		// Devolvemos la vista
