@@ -1,5 +1,8 @@
 package com.joseprecio.projectefinalcurs.controller;
 
+import java.util.Locale;
+
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +44,10 @@ public class LoginController {
 	 */
 	@PostMapping("/loginok")
 	public String loginok() {
-		return "redirect:/dashboard";
+		// Obtenemos la localización
+		Locale locale = LocaleContextHolder.getLocale();
+		
+		return "redirect:/dashboard?lang="+locale.getLanguage();
 	}
 	
 }

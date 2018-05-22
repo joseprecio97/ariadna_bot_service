@@ -47,7 +47,7 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 	@Bean
 	public LocaleResolver localeResolver() {
 		SessionLocaleResolver localeResolver = new SessionLocaleResolver();
-		localeResolver.setDefaultLocale(Locale.US);
+		localeResolver.setDefaultLocale(Locale.forLanguageTag("es"));
 		return localeResolver;
 	}
 
