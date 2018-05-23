@@ -40,10 +40,13 @@ public class CommandController {
 	 * @return
 	 */
 	@PostMapping("/googleassistant")
-	private ResponseEntity<String> googleAssistantCommand(@RequestBody GoogleAssistantCommandModel commandReceived){
+	private ResponseEntity<String> googleAssistantCommand(@RequestBody String commandReceived){
 		//Objeto JSON
 		Gson json = new Gson();
 		
+		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + commandReceived);
+		
+		/*
 		//Creamos el modelo de mensaje de Ariadna Bot Service
 		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
 		
@@ -61,8 +64,10 @@ public class CommandController {
 		//Establecemos el texto de la respuesta
 		googleAssistantResponse.setFulfillmentText(response.getCommand());
 		
+		*/
+		
 		//Devolvemos la respuesta
-		return ResponseEntity.ok().body(json.toJson(googleAssistantResponse));
+		return ResponseEntity.ok().body(json.toJson(""));
 	}
 	
 	/**
