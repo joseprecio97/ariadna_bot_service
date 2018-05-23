@@ -36,24 +36,28 @@ public class CommandController {
 	/**
 	 * Recibe las peticiones de Google Assistant
 	 * 
-	 * @param commandReceived
+	 * @param postJson
 	 * @return
 	 */
 	@PostMapping("/googleassistant")
-	private ResponseEntity<String> googleAssistantCommand(@RequestBody String commandReceived){
+	private ResponseEntity<String> googleAssistantCommand(@RequestBody String postJson){
 		//Objeto JSON
 		Gson json = new Gson();
 		
-		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + commandReceived);
+		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + postJson);
 		
-		/*
+		//Creamos el modelo de google assistant a partir del JSON recibido
+		GoogleAssistantCommandModel commandReceived = json.fromJson(postJson, GoogleAssistantCommandModel.class);
+		
 		//Creamos el modelo de mensaje de Ariadna Bot Service
 		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
 		
+		System.out.println("JOSEP - GOOGLE ACTIONS COMMAND: " + commandReceived.getCommand());
+		
 		//Establecemos los atributos
-		ariadnaCommandModel.setCommand(commandReceived.getQueryResult().getQueryText());
-		ariadnaCommandModel.setConversationId(commandReceived.getSession());
-		ariadnaCommandModel.setLanguage(commandReceived.getQueryResult().getLanguageCode().substring(0, 2));
+		ariadnaCommandModel.setCommand(commandReceived.getCommand());
+		ariadnaCommandModel.setConversationId(commandReceived.getConversation().getConversationId());
+		ariadnaCommandModel.setLanguage(commandReceived.getUser().getLocale().substring(0, 2));
 		
 		// Ejecutamos el comando
 		CommandResponseModel response = commandServiceImpl.sendCommand(ariadnaCommandModel);
@@ -63,8 +67,6 @@ public class CommandController {
 		
 		//Establecemos el texto de la respuesta
 		googleAssistantResponse.setFulfillmentText(response.getCommand());
-		
-		*/
 		
 		//Devolvemos la respuesta
 		return ResponseEntity.ok().body(json.toJson(""));
