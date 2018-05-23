@@ -53,6 +53,7 @@ public class CommandController {
 		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
 		
 		System.out.println("JOSEP - GOOGLE ACTIONS COMMAND: " + commandReceived.getCommand());
+		System.out.println("JOSEP - GOOGLE ACTIONS INTENT: " + commandReceived.getIntent());
 		
 		//Establecemos los atributos
 		ariadnaCommandModel.setCommand(commandReceived.getCommand());
@@ -67,6 +68,8 @@ public class CommandController {
 		
 		//Establecemos el texto de la respuesta
 		googleAssistantResponse.setFulfillmentText(response.getCommand());
+		
+		System.out.println("JOSEP - Response Command: " + response.getCommand());
 		
 		//Devolvemos la respuesta
 		return ResponseEntity.ok().body(json.toJson(""));
