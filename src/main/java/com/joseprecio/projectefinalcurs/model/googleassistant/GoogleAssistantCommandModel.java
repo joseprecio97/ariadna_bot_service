@@ -9,6 +9,12 @@ public class GoogleAssistantCommandModel {
     private GoogleAssistantConversationModel conversation;
     private ArrayList<GoogleAssistantInputModel> inputs;
     
+    public String getIntent() {
+    	int inputsSize = inputs.size() - 1;
+    	
+    	return inputs.get(inputsSize).getIntent();
+    }
+    
     public String getCommand() {
     	int inputsSize = inputs.size() - 1;
     	int rawsInput = inputs.get(inputsSize).getRawInputs().size() - 1;
