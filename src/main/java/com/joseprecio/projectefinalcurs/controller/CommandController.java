@@ -15,7 +15,12 @@ import com.google.gson.Gson;
 import com.joseprecio.projectefinalcurs.model.CommandReceivedModel;
 import com.joseprecio.projectefinalcurs.model.CommandResponseModel;
 import com.joseprecio.projectefinalcurs.model.googleassistant.GoogleAssistantCommandModel;
-import com.joseprecio.projectefinalcurs.model.googleassistant.GoogleAssistantResponseModel;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.ExpectedInputs;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.GoogleAssistantResponseModel;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.InputPrompt;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.Items;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.RichInitialPrompt;
+import com.joseprecio.projectefinalcurs.model.googleassistant.response.SimpleResponse;
 import com.joseprecio.projectefinalcurs.service.CommandService;
 
 /**
@@ -44,16 +49,15 @@ public class CommandController {
 		//Objeto JSON
 		Gson json = new Gson();
 		
-		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + postJson);
-		
 		//Creamos el modelo de google assistant a partir del JSON recibido
 		GoogleAssistantCommandModel commandReceived = json.fromJson(postJson, GoogleAssistantCommandModel.class);
 		
-		//Creamos el modelo de mensaje de Ariadna Bot Service
-		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
-		
+		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + postJson);
 		System.out.println("JOSEP - GOOGLE ACTIONS COMMAND: " + commandReceived.getCommand());
 		System.out.println("JOSEP - GOOGLE ACTIONS INTENT: " + commandReceived.getIntent());
+		
+		//Creamos el modelo de mensaje de Ariadna Bot Service
+		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
 		
 		//Establecemos los atributos
 		ariadnaCommandModel.setCommand(commandReceived.getCommand());
@@ -66,13 +70,32 @@ public class CommandController {
 		//Creamos una respuesta para google assistant a partir de la respuesta de bot Ariadna
 		GoogleAssistantResponseModel googleAssistantResponse = new GoogleAssistantResponseModel();
 		
-		//Establecemos el texto de la respuesta
-		googleAssistantResponse.setFulfillmentText(response.getCommand());
+		//Establecemos la respuesta
+		googleAssistantResponse.setExpectUserResponse(true);
+		googleAssistantResponse.setConversationToken("");
 		
-		System.out.println("JOSEP - Response Command: " + response.getCommand());
+		ExpectedInputs expectedInput = new ExpectedInputs();
+		InputPrompt inputPrompt = new InputPrompt();
+		RichInitialPrompt richInitialPrompt = new RichInitialPrompt();
+		Items items = new Items();
+		SimpleResponse simpleResponse = new SimpleResponse();
+		simpleResponse.setDisplayText(response.getCommand());
+		simpleResponse.setTextToSpeech(response.getCommand());
+		items.setSimpleResponse(simpleResponse);
+		richInitialPrompt.setSuggestions(new String[0]);
+		Items[] itemsArr = new Items[1];
+		itemsArr[0] = items;
+		richInitialPrompt.setItems(itemsArr);
+		inputPrompt.setRichInitialPrompt(richInitialPrompt);
+		expectedInput.setInputPrompt(inputPrompt);
+		ExpectedInputs[] expectedInputArr = new ExpectedInputs[1];
+		expectedInputArr[0] = expectedInput;
+		googleAssistantResponse.setExpectedInputs(expectedInputArr);
+		
+		System.out.println("JOSEP - GOOGLE RESPONSE: " + json.toJson(googleAssistantResponse));
 		
 		//Devolvemos la respuesta
-		return ResponseEntity.ok().body(json.toJson(""));
+		return ResponseEntity.ok().body(json.toJson(googleAssistantResponse));
 	}
 	
 	/**
