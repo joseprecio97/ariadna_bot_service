@@ -1,2 +1,2 @@
 {"id":"Suma","languages":["es"],"parameters":{"value1":{"name":"value1","required":true,"type":"Integer","list":false},"value2":{"name":"value2","required":true,"type":"Integer","list":false},"resultado":{"name":"resultado","required":false,"type":"Integer","list":false}}}
-{"id":"welcome","languages":["es"],"parameters":{}}
+{"id":"welcome","languages":["es","en"],"parameters":{}}
