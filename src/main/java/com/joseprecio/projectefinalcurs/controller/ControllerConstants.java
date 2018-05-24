@@ -7,5 +7,6 @@ public class ControllerConstants {
 	public static final String intentsView = "pages/intents";
 	public static final String editIntentView = "pages/editintent";
 	public static final String loginView = "pages/login";
+	public static final String gaUpdateView = "pages/gaupdate";
 	
 }

@@ -7,3 +7,7 @@ spring:
 auth:
   username: admin
   password: admin
+  
+so: linux
+
+ariadnabot.url: https://desolate-eyrie-83459.herokuapp.com
