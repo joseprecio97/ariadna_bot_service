@@ -92,8 +92,6 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 		Bot bot = context.getBean(Bot.class);
 
 		try {
-			System.out.println("Ruta: " + new File(".").getAbsolutePath());
-			
 			// Inicializamos el bot
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ loggerResources.getString("msg_init_bot_intentTraining_load"));

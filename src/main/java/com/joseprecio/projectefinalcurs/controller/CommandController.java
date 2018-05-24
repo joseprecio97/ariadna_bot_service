@@ -52,10 +52,6 @@ public class CommandController {
 		//Creamos el modelo de google assistant a partir del JSON recibido
 		GoogleAssistantCommandModel commandReceived = json.fromJson(postJson, GoogleAssistantCommandModel.class);
 		
-		System.out.println("JOSEP - GOOGLE ACTIONS POST: " + postJson);
-		System.out.println("JOSEP - GOOGLE ACTIONS COMMAND: " + commandReceived.getCommand());
-		System.out.println("JOSEP - GOOGLE ACTIONS INTENT: " + commandReceived.getIntent());
-		
 		//Creamos el modelo de mensaje de Ariadna Bot Service
 		CommandReceivedModel ariadnaCommandModel = new CommandReceivedModel();
 		
@@ -91,8 +87,6 @@ public class CommandController {
 		ExpectedInputs[] expectedInputArr = new ExpectedInputs[1];
 		expectedInputArr[0] = expectedInput;
 		googleAssistantResponse.setExpectedInputs(expectedInputArr);
-		
-		System.out.println("JOSEP - GOOGLE RESPONSE: " + json.toJson(googleAssistantResponse));
 		
 		//Devolvemos la respuesta
 		return ResponseEntity.ok().body(json.toJson(googleAssistantResponse));

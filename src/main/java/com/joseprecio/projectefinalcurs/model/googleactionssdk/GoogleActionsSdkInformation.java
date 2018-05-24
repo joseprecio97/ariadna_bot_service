@@ -1,13 +1,12 @@
 package com.joseprecio.projectefinalcurs.model.googleactionssdk;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class GoogleActionsSdkInformation {
 
 	private String projectId;
 	private ArrayList<String> languages;
-	private HashMap<String, ArrayList<String>> welcomePhrases;
+	private String welcomeIntent;
 
 	public String getProjectId() {
 		return projectId;
@@ -25,12 +24,12 @@ public class GoogleActionsSdkInformation {
 		this.languages = languages;
 	}
 
-	public HashMap<String, ArrayList<String>> getWelcomePhrases() {
-		return welcomePhrases;
+	public String getWelcomeIntent() {
+		return welcomeIntent;
 	}
 
-	public void setWelcomePhrases(HashMap<String, ArrayList<String>> welcomePhrases) {
-		this.welcomePhrases = welcomePhrases;
+	public void setWelcomeIntent(String welcomeIntent) {
+		this.welcomeIntent = welcomeIntent;
 	}
 
 }

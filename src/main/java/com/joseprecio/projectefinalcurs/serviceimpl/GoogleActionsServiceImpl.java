@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,9 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 	
 	@Value("${ariadnabot.url}")
 	private String url;
+	
+	@Autowired
+	private CommandServiceImpl commandServiceImpl;
 	
 	/**
 	 * Actualiza el project id
@@ -111,9 +115,10 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 			//WELCOME ACTION
 			//Frases
 			Trigger welcomeTrigger = new Trigger();
-			String[] welcomePhrases = new String[info.getWelcomePhrases().get(language).size()];
-			for(int i = 0; i < info.getWelcomePhrases().get(language).size(); i++) {
-				welcomePhrases[i] = info.getWelcomePhrases().get(language).get(i);
+			com.joseprecio.projectefinalcurs.bot.Intent botWelcomeIntent = commandServiceImpl.getIntent(info.getWelcomeIntent());
+			String[] welcomePhrases = new String[botWelcomeIntent.getTrainingPhrases().get(language).size()];
+			for(int i = 0; i < botWelcomeIntent.getTrainingPhrases().get(language).size(); i++) {
+				welcomePhrases[i] = botWelcomeIntent.getTrainingPhrases().get(language).get(i);
 			}
 			
 			welcomeTrigger.setQueryPatterns(welcomePhrases); 
