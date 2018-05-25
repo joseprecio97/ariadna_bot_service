@@ -74,18 +74,6 @@ function sendMessage(options){
 	var message = $('#ariadna-text-input').val();
 
 	if (message != '') {
-		//Añadimos el mensaje al chat
-		var p = $("<p>" + message + "</p>");
-		var chat_body = $("<div class='chat-body clearfix'>");
-		chat_body.append(p);
-		var img = $('<img src="' + options.url + '/images/avatar.png" class="img-circle" style="height: 50px;width: 50px;" />');
-		var span = $('<span class="chat-img pull-right">');
-		span.append(img);
-		var li = $('<li class="right clearfix">');
-		li.append(span);
-		li.append(chat_body);
-		$(".chat").append(li);
-		
 		//Obtenemos el conversation id de la cookie
 		var conversationId = getCookie("ariadna-service-conversationId");
 		
@@ -102,6 +90,18 @@ function sendMessage(options){
 	        	if(conversationId == ""){
 	        		setCookie("ariadna-service-conversationId", response.conversationId);
 	        	}
+	        	
+	        	//Añadimos el mensaje al chat
+	    		var p = $("<p>" + message + "</p>");
+	    		var chat_body = $("<div class='chat-body clearfix'>");
+	    		chat_body.append(p);
+	    		var img = $('<img src="' + options.url + '/images/avatar.png" class="img-circle" style="height: 50px;width: 50px;" />');
+	    		var span = $('<span class="chat-img pull-right">');
+	    		span.append(img);
+	    		var li = $('<li class="right clearfix">');
+	    		li.append(span);
+	    		li.append(chat_body);
+	    		$(".chat").append(li);
 	        	
 	        	//Añadimos la respuesta al chat
 	        	var p = $("<p>" + response.command + "</p>");
@@ -133,6 +133,9 @@ function sendMessage(options){
 		            msg.text = response.command;
 		            speechSynthesis.speak(msg);
 	        	}
+	        }, 
+	        error: function() {
+	        	
 	        }
 	    });
 	}
