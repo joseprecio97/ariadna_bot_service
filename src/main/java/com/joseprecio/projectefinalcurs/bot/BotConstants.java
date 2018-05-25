@@ -17,7 +17,7 @@ public class BotConstants {
 	public static final String BOT_PROMPTS_FOLDER = "prompts";
 	public static final String BOT_SCRIPTS_FOLDER = "scripts";
 	public static final String BOT_GOOGLEACTIONS_FOLDER = "googleactions";
-	public static final String[] BOT_AVAILABLE_LANGUAGE = {"es", "en", "ca"};
+	public static final String[] BOT_AVAILABLE_LANGUAGE = {"es", "en"};
 	public static final String BOT_GOOGLEACTIONS_FILE = "information.json";
 	
 	public static final String BOT_NEWCONVERSATION_EVENT = "newConversation";

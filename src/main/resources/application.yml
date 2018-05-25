@@ -3,11 +3,8 @@ spring:
     cache: false
     mode: LEGACYHTML5
     encoding: utf-8
-    
 auth:
   username: admin
   password: admin
-  
 so: windows
-
 ariadnabot.url: https://desolate-eyrie-83459.herokuapp.com

@@ -109,18 +109,17 @@ public class CommandController {
 		if (bindingResult.hasErrors()) {
 			return ResponseEntity.badRequest().body(json.toJson(bindingResult.getAllErrors()));
 		}
-
+		
+		//Comprovamos si hay que generar un conversation ID
+		if(commandReceived.getConversationId() == null || commandReceived.getConversationId() == "") {
+			commandReceived.setConversationId(commandServiceImpl.getNewConversationId());
+		}
+		
 		// Ejecutamos el comando
 		CommandResponseModel response = commandServiceImpl.sendCommand(commandReceived);
 
-		if(!response.isServerError()) {
-			// Devolvemos la respuesta del bot
-			return ResponseEntity.ok().body(json.toJson(response));
-		}else {
-			//Devolvemos la respuesta indicando que se ha producido un error en el servidor
-			return ResponseEntity.status(500).body(json.toJson(response));
-		}
-
+		//Devolvemos la respuesta del bot
+		return ResponseEntity.ok().body(json.toJson(response));
 	}
 
 }

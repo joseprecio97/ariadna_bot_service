@@ -13,7 +13,6 @@ public class CommandReceivedModel {
 
 	@NotEmpty
 	private String command;
-	@NotEmpty
 	private String conversationId;
 	@NotEmpty
 	private String language;

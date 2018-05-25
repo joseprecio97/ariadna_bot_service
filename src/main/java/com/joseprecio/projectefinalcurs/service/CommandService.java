@@ -33,5 +33,7 @@ public interface CommandService {
 	public void savePrompts() throws Exception;
 
 	public void removeIntent(Intent newIntent) throws Exception;
+
+	String getNewConversationId();
 	
 }

@@ -141,6 +141,20 @@
                         		<i class="fa fa-google fa-fw"></i>
                         		<span th:text="#{googleactions}" />
                         	</a>
+                        	<ul class="nav nav-second-level collapse" >
+                            	<li>
+                                    <a th:href="@{'/googleactions/update?lang=' + ${locale}} + '#projectid'" th:text="#{projectid}"></a>
+                                </li>
+                                <li>
+                                    <a th:href="@{'/googleactions/update?lang=' + ${locale}} + '#languages'" th:text="#{languagessoported}"></a>
+                                </li>
+                                <li>
+                                    <a th:href="@{'/googleactions/update?lang=' + ${locale}} + '#welcomeintent'" th:text="#{welcomeintent}"></a>
+                                </li>
+                                <li>
+                                    <a th:href="@{'/googleactions/update?lang=' + ${locale}} + '#googleactionssdk'" th:text="#{googleactionssdk}"></a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                 </div>

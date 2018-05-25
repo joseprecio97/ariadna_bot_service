@@ -5,40 +5,112 @@
 
 <body>
 
-    <div id="wrapper">
+	<div id="wrapper">
 
-        <nav th:replace="pages/layout :: nav"></nav>
+		<nav th:replace="pages/layout :: nav"></nav>
 
-        <div id="page-wrapper">
-            <div class="row">
-                <div class="col-lg-12">
-                    <h1 class="page-header"><span th:text="#{dashboard}"></span></h1>
-                </div>
-                <!-- /.col-lg-12 -->
-            </div>
-            <!-- /.row -->
-        </div>
-        <!-- /#page-wrapper -->
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header">
+						<span th:text="#{dashboard}"></span>
+					</h1>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+			<div class="chat-panel panel panel-default">
+				<div class="panel-heading">
+					<i class="fa fa-comments fa-fw"></i> Chat
+					<div class="btn-group pull-right">
+						<button type="button"
+							class="btn btn-default btn-xs dropdown-toggle"
+							data-toggle="dropdown">
+							<i class="fa fa-chevron-down"></i>
+						</button>
+						<ul class="dropdown-menu slidedown">
+							<li>
+								<a href="#"> <i class="fa fa-refresh fa-fw"></i>
+										Refresh
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div id="test_chat">
+				<!-- 
+				<div class="panel-body" >
+					<ul class="chat">
+						<li class="left clearfix">
+							<span class="chat-img pull-left">
+								<img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" />
+							</span>
+							<div class="chat-body clearfix">
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+									Curabitur bibendum ornare dolor, quis ullamcorper ligula
+									sodales.</p>
+							</div>
+						</li>
+						<li class="right clearfix"><span class="chat-img pull-right">
+								<img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar"
+								class="img-circle" />
+						</span>
+							<div class="chat-body clearfix">
+								<div class="header">
+									<small class=" text-muted"> <i
+										class="fa fa-clock-o fa-fw"></i> 15 mins ago
+									</small> <strong class="pull-right primary-font">Bhaumik Patel</strong>
+								</div>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+									Curabitur bibendum ornare dolor, quis ullamcorper ligula
+									sodales.</p>
+							</div></li>
+					</ul>
+				</div>
+				<div class="panel-footer">
+					<div class="input-group">
+						<input id="btn-input" type="text" class="form-control input-sm"
+							placeholder="Type your message here..." /> <span
+							class="input-group-btn">
+							<button class="btn btn-warning btn-sm" id="btn-chat">
+								Send</button>
+						</span>
+					</div>
+				</div>
+				-->
+			</div>
+			<!-- /.panel .chat-panel -->
+			<!-- /.row -->
+		</div>
+		<!-- /#page-wrapper -->
 
-    </div>
-    <!-- /#wrapper -->
+	</div>
+	<!-- /#wrapper -->
 
-    <!-- jQuery -->
-    <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+	<!-- jQuery -->
+	<script th:src="@{/vendor/jquery/jquery.min.js}"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script th:src="@{/vendor/bootstrap/js/bootstrap.min.js}"></script>
+	<!-- Bootstrap Core JavaScript -->
+	<script th:src="@{/vendor/bootstrap/js/bootstrap.min.js}"></script>
 
-    <!-- Metis Menu Plugin JavaScript -->
-    <script th:src="@{/vendor/metisMenu/metisMenu.min.js}"></script>
+	<!-- Metis Menu Plugin JavaScript -->
+	<script th:src="@{/vendor/metisMenu/metisMenu.min.js}"></script>
 
-    <!-- Morris Charts JavaScript -->
-    <script th:src="@{/vendor/raphael/raphael.min.js}"></script>
-    <script th:src="@{/vendor/morrisjs/morris.min.js}"></script>
-    <script th:src="@{/data/morris-data.js}"></script>
+	<!-- Morris Charts JavaScript -->
+	<script th:src="@{/vendor/raphael/raphael.min.js}"></script>
+	<script th:src="@{/vendor/morrisjs/morris.min.js}"></script>
+	<script th:src="@{/data/morris-data.js}"></script>
 
-    <!-- Custom Theme JavaScript -->
-    <script th:src="@{/dist/js/sb-admin-2.js}"></script>
+	<!-- Custom Theme JavaScript -->
+	<script th:src="@{/dist/js/sb-admin-2.js}"></script>
+
+	<!-- Ariadna Bot Service JS Plugin -->
+	<script th:src="@{/ariadna_bot_service/ariadna_bot_interface.js}"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#test_chat").ariadna_bot_interface({url:'http://localhost:8080'});
+		});
+	</script>
 
 </body>
 

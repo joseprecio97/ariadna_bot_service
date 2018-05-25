@@ -13,18 +13,18 @@ public class CommandResponseModel implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private String command;
-	private boolean serverError;
-	
+	private String conversationId;
+
 	public CommandResponseModel() {
-		this.serverError = false;
+
 	}
 
-	public boolean isServerError() {
-		return serverError;
+	public String getConversationId() {
+		return conversationId;
 	}
 
-	public void setServerError(boolean serverError) {
-		this.serverError = serverError;
+	public void setConversationId(String conversationId) {
+		this.conversationId = conversationId;
 	}
 
 	public String getCommand() {

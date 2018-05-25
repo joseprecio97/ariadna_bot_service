@@ -88,6 +88,20 @@ public class Bot {
 		this.js = new HashMap<String, Invocable>();
 	}
 		
+	/**
+	 * Valida que no se haya generado un id de conversación ya existente
+	 * 
+	 * @param generatedConversationId
+	 * @return
+	 */
+	public boolean validGeneratedConversationId(String generatedConversationId) {
+		if(this.conversations.get(generatedConversationId) == null) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
 	public HashMap<String, Properties> getLanguagePrompts() {
 		return languagePrompts;
 	}
@@ -1156,19 +1170,19 @@ public class Bot {
 	 */
 	public CommandResponseModel sendMessage(CommandReceivedModel commandReceived) {
 		Gson json = new Gson();
-		String username = commandReceived.getConversationId();
+		String conversationId = commandReceived.getConversationId();
 		String language = commandReceived.getLanguage();
 		String prompt = null;
 		CommandResponseModel commandResponse = new CommandResponseModel();
 
 		// Comprovamos si el usuario ha iniciado alguna conversación con el Bot
-		if (conversations.get(username) == null) {
+		if (conversations.get(conversationId) == null) {
 			// Detectamos el intent a partir del comando recibido
 			String intent = detectIntent(commandReceived.getCommand(), language);
 
 			// Creamos una nueva conversación para el usuario, el intent detectado y el
 			// lenguaje del usuario
-			Conversation newConversation = createConversation(username, intent, language);
+			Conversation newConversation = createConversation(conversationId, intent, language);
 
 			try {
 				// Detectamos las entidades del texto
@@ -1179,35 +1193,32 @@ public class Bot {
 				
 				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 				// al parámetro
-				prompt = languagePrompts.get(conversations.get(username).getLanguage())
-						.getProperty(conversations.get(username).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
 
 				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(username));
+				prompt = formatPrompt(prompt, conversations.get(conversationId));
 				
 				// Establecemos el prompt como mensaje de respuesta
 				commandResponse.setCommand(prompt);
-
-				//Marcamos como que se ha producido un error de servidor
-				commandResponse.setServerError(true);
 				
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
 			}
 
 			// Añadimos la conversa al listado de conversas activas del bot
-			conversations.put(username, newConversation);
+			conversations.put(conversationId, newConversation);
 
 			CommandResponseModel newConversationEventResponse = null;
 
 			try {
 				// Ejecutamos el script del evento nueva conversa
-				if ((newConversationEventResponse = onNewConversation(conversations.get(username))) != null) {
+				if ((newConversationEventResponse = onNewConversation(conversations.get(conversationId))) != null) {
 					// Mostramos la conversación que tiene en curso el usuario que ha enviado el
 					// parámetro
-					if (conversations.get(username) != null) {
+					if (conversations.get(conversationId) != null) {
 						Logger.writeConsole(
-								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(username)));
+								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
 					}
 
 					// Devolvemos la respuesta del evento
@@ -1221,17 +1232,14 @@ public class Bot {
 				
 				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 				// al parámetro
-				prompt = languagePrompts.get(conversations.get(username).getLanguage())
-						.getProperty(conversations.get(username).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
 
 				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(username));
+				prompt = formatPrompt(prompt, conversations.get(conversationId));
 				
 				// Establecemos el prompt como mensaje de respuesta
 				commandResponse.setCommand(prompt);
-
-				//Marcamos como que se ha producido un error de servidor
-				commandResponse.setServerError(true);
 				
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
@@ -1239,19 +1247,19 @@ public class Bot {
 		} else {
 			try {
 				// Establecemos el valor del parámetro
-				setParameterValue(conversations.get(username), conversations.get(username).getNextCommingParameter(),
+				setParameterValue(conversations.get(conversationId), conversations.get(conversationId).getNextCommingParameter(),
 						commandReceived.getCommand(), false);
 
 				CommandResponseModel setValueEventResponse = null;
 
 				// Ejecutamos el script de set value
-				if ((setValueEventResponse = onParameterSetValue(conversations.get(username),
+				if ((setValueEventResponse = onParameterSetValue(conversations.get(conversationId),
 						commandReceived.getCommand())) != null) {
 					// Mostramos la conversación que tiene en curso el usuario que ha enviado el
 					// parámetro
-					if (conversations.get(username) != null) {
+					if (conversations.get(conversationId) != null) {
 						Logger.writeConsole(
-								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(username)));
+								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
 					}
 
 					// Devolvemos la respuesta del evento
@@ -1265,17 +1273,14 @@ public class Bot {
 				
 				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 				// al parámetro
-				prompt = languagePrompts.get(conversations.get(username).getLanguage())
-						.getProperty(conversations.get(username).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
 
 				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(username));
+				prompt = formatPrompt(prompt, conversations.get(conversationId));
 				
 				// Establecemos el prompt como mensaje de respuesta
 				commandResponse.setCommand(prompt);
-
-				//Marcamos como que se ha producido un error de servidor
-				commandResponse.setServerError(true);
 				
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
@@ -1287,19 +1292,16 @@ public class Bot {
 				
 				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 				// al parámetro
-				prompt = languagePrompts.get(conversations.get(username).getLanguage())
-						.getProperty(conversations.get(username).getId() + "_"
-								+ conversations.get(username).getNextCommingParameter()
+				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+						.getProperty(conversations.get(conversationId).getId() + "_"
+								+ conversations.get(conversationId).getNextCommingParameter()
 								+ BotConstants.BOT_PARAMETERBADVALUE_SUFIX);
 
 				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(username));
+				prompt = formatPrompt(prompt, conversations.get(conversationId));
 				
 				// Establecemos el prompt como mensaje de respuesta
 				commandResponse.setCommand(prompt);
-
-				//Marcamos como que se ha producido un error de servidor
-				commandResponse.setServerError(true);
 				
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
@@ -1307,17 +1309,17 @@ public class Bot {
 		}
 
 		// Comprovamos si no sabemos cual es el siguiente parámetro
-		if (conversations.get(username).getNextCommingParameter() == null) {
+		if (conversations.get(conversationId).getNextCommingParameter() == null) {
 			CommandResponseModel nextCommingParameter = null;
 
 			try {
 				// Obtenemos el prompt para pedir el próximo parámetro
-				if ((nextCommingParameter = getNextCommingParameterPrompt(conversations.get(username))) != null) {
+				if ((nextCommingParameter = getNextCommingParameterPrompt(conversations.get(conversationId))) != null) {
 					return nextCommingParameter;
 				} else {
 					try {
 						// Ejecutamos el script final
-						prompt = onConversationEnd(conversations.get(username));
+						prompt = onConversationEnd(conversations.get(conversationId));
 					} catch (ScriptException SE) {
 						// Error de ejecución del script
 
@@ -1326,33 +1328,30 @@ public class Bot {
 						
 						// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 						// al parámetro
-						prompt = languagePrompts.get(conversations.get(username).getLanguage()).getProperty(
-								conversations.get(username).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+						prompt = languagePrompts.get(conversations.get(conversationId).getLanguage()).getProperty(
+								conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
 
 						//Formateamos el prompt
-						prompt = formatPrompt(prompt, conversations.get(username));
+						prompt = formatPrompt(prompt, conversations.get(conversationId));
 						
 						// Establecemos el prompt como mensaje de respuesta
 						commandResponse.setCommand(prompt);
-
-						//Marcamos como que se ha producido un error de servidor
-						commandResponse.setServerError(true);
 						
 						// Devolvemos la respuesta del BOT
 						return commandResponse;
 					}
 
 					//Formateamos el prompt
-					prompt = formatPrompt(prompt, conversations.get(username));
+					prompt = formatPrompt(prompt, conversations.get(conversationId));
 					
 					// Establecemos la respuesta
 					commandResponse.setCommand(prompt);
 
 					// Mostramos la conversa completa
-					Logger.writeConsole("DEBUG -- Conversation complete: " + json.toJson(conversations.get(username)));
+					Logger.writeConsole("DEBUG -- Conversation complete: " + json.toJson(conversations.get(conversationId)));
 
 					// Eliminamos la conversa del histórico
-					conversations.put(username, null);
+					conversations.put(conversationId, null);
 				}
 			} catch (NotLanguageIntentTrainingException e) {
 				//Mostramos la traza
@@ -1360,17 +1359,14 @@ public class Bot {
 				
 				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
 				// al parámetro
-				prompt = languagePrompts.get(conversations.get(username).getLanguage())
-						.getProperty(conversations.get(username).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
 
 				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(username));
+				prompt = formatPrompt(prompt, conversations.get(conversationId));
 				
 				// Establecemos el prompt como mensaje de respuesta
 				commandResponse.setCommand(prompt);
-
-				//Marcamos como que se ha producido un error de servidor
-				commandResponse.setServerError(true);
 				
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
@@ -1379,8 +1375,8 @@ public class Bot {
 
 		// Mostramos la conversación que tiene en curso el usuario que ha enviado el
 		// parámetro
-		if (conversations.get(username) != null) {
-			Logger.writeConsole("DEBUG -- Conversation in course: " + json.toJson(conversations.get(username)));
+		if (conversations.get(conversationId) != null) {
+			Logger.writeConsole("DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
 		}
 
 		// Devolvemos la respuesta

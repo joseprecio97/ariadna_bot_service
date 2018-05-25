@@ -2,6 +2,7 @@ package com.joseprecio.projectefinalcurs.serviceimpl;
 
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.script.ScriptException;
 
@@ -42,6 +43,8 @@ public class CommandServiceImpl implements CommandService {
 	@Override
 	public CommandResponseModel sendCommand(CommandReceivedModel command) {
 		CommandResponseModel response = bot.sendMessage(command);
+		
+		response.setConversationId(command.getConversationId());
 		
 		//Devolvemos la respuesta del bot
 		return response;
@@ -135,6 +138,24 @@ public class CommandServiceImpl implements CommandService {
 		
 		//Guardamos los intents en el fichero json de configuración
 		bot.saveIntents();
+	}
+	
+	/**
+	 * Crea un nuevo id de conversación
+	 * 
+	 * @return
+	 */
+	@Override
+	public String getNewConversationId() {
+		String randomConversationId = null;
+		
+		do {
+			//Generamos un id de conversación aleatorio
+			randomConversationId = UUID.randomUUID().toString();
+		}while(!bot.validGeneratedConversationId(randomConversationId));
+		
+		//Devolvemos el id de conversación
+		return randomConversationId;
 	}
 	
 }
