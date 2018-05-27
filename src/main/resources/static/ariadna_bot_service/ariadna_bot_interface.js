@@ -6,6 +6,9 @@
 				.each(function() {
 					var element = $(this);
 
+					//Actualizamos el objeto
+					globalOptions = options;
+					
 					// Creamos el div panel body
 					var panel_body = $("<div/>");
 					panel_body.addClass("panel-body");
@@ -25,8 +28,19 @@
 					var input_group = $("<div/>");
 					input_group.addClass("input-group");
 
+					//Imagen micrófono
+					var img = $('<img id="microphone-btn" src="' + options.url + '/images/microphone.png" class="img-circle" style="height: 30px;width: 30px;float: left; margin-right: 10px;" />');
+					img.fadeTo( "slow" , 0.6);
+					input_group.append(img);
+					input_group.click(function(){
+						if ('webkitSpeechRecognition' in window) {
+							$("#microphone-btn").fadeTo( "slow" , 1);
+							startRecording();
+						}
+					});
+					
 					// Creamos el input
-					var input = $("<input id='ariadna-text-input' type='text' class='form-control input-sm' placeholder='Type your message here...' />");
+					var input = $("<input id='ariadna-text-input' type='text' class='form-control input-sm' style='width: 95%;' placeholder='Type your message here...' />");
 
 					input.keypress(function(event){
 						if ( event.which == 13 ) {
@@ -62,12 +76,16 @@
 					element.append(panel_body);
 					// Añadimos el panel footer al div
 					element.append(panel_footer);
+					
+					
 				});
 
 		return this;
 	}
 
 })(jQuery);
+
+var globalOptions = null;
 
 function sendMessage(options){
 	//Obtenemos el mensaje a enviar
@@ -126,7 +144,6 @@ function sendMessage(options){
 		        	//Dictamos el mensaje
 		        	var msg = new SpeechSynthesisUtterance();
 		            var voices = window.speechSynthesis.getVoices();
-		            console.log(voices);
 		            msg.voice = voices[0];
 		            msg.rate = 10 / 10;
 		            msg.pitch = 1;

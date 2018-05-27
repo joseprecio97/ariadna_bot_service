@@ -7,4 +7,4 @@ auth:
   username: admin
   password: admin
 so: windows
-ariadnabot.url: https://desolate-eyrie-83459.herokuapp.com
+ariadnabot.url: http://localhost:8080
