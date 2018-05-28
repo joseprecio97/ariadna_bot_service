@@ -305,8 +305,6 @@ public class Bot {
 			//Leemos el contenido del fichero de configuración
 			File jsonFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD);
 			
-			System.out.println("ruta json: " + jsonFile.getAbsolutePath());
-			
 			//Creamos un BufferedReader
 			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile)));
 			
@@ -448,9 +446,6 @@ public class Bot {
 				// Añadimos el NameSample al listado de nama sample
 				nameStreams.get(language).put(intent.getId(), nameSampleStream);
 				nameFinderME.get(language).put(intent.getId(), null);
-
-				// Cerramos el stream
-				lineStream.close();
 			}
 		}
 	}
@@ -491,10 +486,12 @@ public class Bot {
 							new NameFinderME(NameFinderME.train(language, null, combinedNameSampleStream,
 									TrainingParameters.defaultParams(), (AdaptiveFeatureGenerator) null,
 									Collections.<String, Object>emptyMap())));
-
+					
 					// Cerramos el stream
 					combinedNameSampleStream.close();
 				}
+				
+				
 			} catch (NullPointerException e) {
 
 			}
