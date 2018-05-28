@@ -1,22 +1,47 @@
 package com.joseprecio.projectefinalcurs.serviceimpl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.Locale.Category;
 
 import javax.script.ScriptException;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import com.joseprecio.projectefinalcurs.ApplicationConstants;
 import com.joseprecio.projectefinalcurs.bot.Bot;
 import com.joseprecio.projectefinalcurs.bot.BotConstants;
 import com.joseprecio.projectefinalcurs.bot.Intent;
+import com.joseprecio.projectefinalcurs.bot.Parameter;
 import com.joseprecio.projectefinalcurs.bot.exceptions.NotLanguageIntentTrainingException;
 import com.joseprecio.projectefinalcurs.bot.exceptions.NotParameterIntentException;
 import com.joseprecio.projectefinalcurs.model.CommandReceivedModel;
 import com.joseprecio.projectefinalcurs.model.CommandResponseModel;
 import com.joseprecio.projectefinalcurs.service.CommandService;
+
+import opennlp.maxent.GISModel;
+import opennlp.model.MutableContext;
+import opennlp.model.UniformPrior;
+import opennlp.tools.doccat.BagOfWordsFeatureGenerator;
+import opennlp.tools.doccat.DocumentCategorizerME;
+import opennlp.tools.namefind.DefaultNameContextGenerator;
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.util.featuregen.AggregatedFeatureGenerator;
+import opennlp.tools.util.featuregen.CachedFeatureGenerator;
 
 /**
  * Implementación del servico comandos de voz
@@ -29,7 +54,78 @@ import com.joseprecio.projectefinalcurs.service.CommandService;
 public class CommandServiceImpl implements CommandService {
 
 	@Autowired
+	@Qualifier("bot")
 	private Bot bot;
+	
+	@Autowired
+	@Qualifier("bot_production")
+	private Bot bot_production;
+	
+	/**
+	 * Actualiza el Bot de producción
+	 * @throws Exception 
+	 */
+	@Override
+	public void deploy() throws Exception {
+		try {
+			//Obtenemos los mensajes de log
+			ResourceBundle loggerResources = ResourceBundle.getBundle(ApplicationConstants.TEXTS_FILENAME,
+					Locale.getDefault(Category.DISPLAY));
+			
+			//Copiamos el directorio del bot de desarrollo como el bot de producción
+			org.apache.commons.io.FileUtils.copyDirectory(new File(BotConstants.BOT_CONFIG_FOLDER), 
+					new File(BotConstants.BOT_DEPLOY_FOLDER));
+			
+			//Creamos un Bot
+			Bot bot_temp = new Bot();
+			bot_temp.setProduction(true);
+			
+			// Inicializamos el bot
+			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
+					+ MessageFormat.format(loggerResources.getString("msg_init_bot_intentTraining_load"), "PROD"));
+			bot_temp.init();
+			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
+					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "PROD"));
+			
+			//Si no se producce ningún error durante el entrenamiento, actualizamos el Bot de producción
+			bot_production = bot_temp;
+		}catch(Exception e) {
+			//Pintamos la excepción
+			e.printStackTrace();
+			throw new Exception(e);
+		}
+	}
+	
+	/**
+	 * Entrena el Bot de desarrollo
+	 * @throws Exception 
+	 */
+	@Override
+	public void train() throws Exception {
+		//Obtenemos los mensajes de log
+		ResourceBundle loggerResources = ResourceBundle.getBundle(ApplicationConstants.TEXTS_FILENAME,
+				Locale.getDefault(Category.DISPLAY));
+		
+		try {
+			//Creamos un Bot
+			Bot bot_temp = new Bot();
+			bot_temp.setProduction(false);
+			
+			// Inicializamos el bot
+			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
+					+ MessageFormat.format(loggerResources.getString("msg_init_bot_intentTraining_load"), "DEV"));
+			bot_temp.init();
+			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
+					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "DEV"));
+			
+			//Si no se producce ningún error durante el entrenamiento, actualizamos el Bot de desarrollo
+			bot = bot_temp;
+		} catch (Exception e) {
+			// Mostramos la traza de error
+			e.printStackTrace();
+			throw new Exception(e);
+		}
+	}
 	
 	/**
 	 * Envia al bot un comando
@@ -41,8 +137,14 @@ public class CommandServiceImpl implements CommandService {
 	 * @throws BadLanguageException 
 	 */
 	@Override
-	public CommandResponseModel sendCommand(CommandReceivedModel command) {
-		CommandResponseModel response = bot.sendMessage(command);
+	public CommandResponseModel sendCommand(CommandReceivedModel command, boolean productionBot) {
+		CommandResponseModel response = null;
+		
+		if(productionBot) {
+			response = bot_production.sendMessage(command);
+		}else {
+			response = bot.sendMessage(command);
+		}
 		
 		response.setConversationId(command.getConversationId());
 		
@@ -146,13 +248,20 @@ public class CommandServiceImpl implements CommandService {
 	 * @return
 	 */
 	@Override
-	public String getNewConversationId() {
+	public String getNewConversationId(boolean productionBot) {
 		String randomConversationId = null;
 		
-		do {
-			//Generamos un id de conversación aleatorio
-			randomConversationId = UUID.randomUUID().toString();
-		}while(!bot.validGeneratedConversationId(randomConversationId));
+		if(productionBot) {
+			do {
+				//Generamos un id de conversación aleatorio
+				randomConversationId = UUID.randomUUID().toString();
+			}while(!bot_production.validGeneratedConversationId(randomConversationId));
+		}else {
+			do {
+				//Generamos un id de conversación aleatorio
+				randomConversationId = UUID.randomUUID().toString();
+			}while(!bot.validGeneratedConversationId(randomConversationId));
+		}
 		
 		//Devolvemos el id de conversación
 		return randomConversationId;

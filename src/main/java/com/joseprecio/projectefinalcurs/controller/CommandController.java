@@ -61,7 +61,7 @@ public class CommandController {
 		ariadnaCommandModel.setLanguage(commandReceived.getUser().getLocale().substring(0, 2));
 		
 		// Ejecutamos el comando
-		CommandResponseModel response = commandServiceImpl.sendCommand(ariadnaCommandModel);
+		CommandResponseModel response = commandServiceImpl.sendCommand(ariadnaCommandModel, true);
 		
 		//Creamos una respuesta para google assistant a partir de la respuesta de bot Ariadna
 		GoogleAssistantResponseModel googleAssistantResponse = new GoogleAssistantResponseModel();
@@ -99,6 +99,36 @@ public class CommandController {
 	 * @param bindingResult
 	 * @return ResponseEntity
 	 */
+	@PostMapping("/dev-command")
+	private ResponseEntity<String> devDoSomething(@Valid @RequestBody CommandReceivedModel commandReceived,
+			BindingResult bindingResult) {
+
+		Gson json = new Gson();
+
+		// Validamos el modelo recibido
+		if (bindingResult.hasErrors()) {
+			return ResponseEntity.badRequest().body(json.toJson(bindingResult.getAllErrors()));
+		}
+		
+		//Comprovamos si hay que generar un conversation ID
+		if(commandReceived.getConversationId() == null || commandReceived.getConversationId() == "") {
+			commandReceived.setConversationId(commandServiceImpl.getNewConversationId(false));
+		}
+		
+		// Ejecutamos el comando
+		CommandResponseModel response = commandServiceImpl.sendCommand(commandReceived, false);
+
+		//Devolvemos la respuesta del bot
+		return ResponseEntity.ok().body(json.toJson(response));
+	}
+	
+	/**
+	 * Commando propio de ariadna bot service
+	 * 
+	 * @param commandReceived
+	 * @param bindingResult
+	 * @return ResponseEntity
+	 */
 	@PostMapping("/command")
 	private ResponseEntity<String> doSomething(@Valid @RequestBody CommandReceivedModel commandReceived,
 			BindingResult bindingResult) {
@@ -112,11 +142,11 @@ public class CommandController {
 		
 		//Comprovamos si hay que generar un conversation ID
 		if(commandReceived.getConversationId() == null || commandReceived.getConversationId() == "") {
-			commandReceived.setConversationId(commandServiceImpl.getNewConversationId());
+			commandReceived.setConversationId(commandServiceImpl.getNewConversationId(true));
 		}
 		
 		// Ejecutamos el comando
-		CommandResponseModel response = commandServiceImpl.sendCommand(commandReceived);
+		CommandResponseModel response = commandServiceImpl.sendCommand(commandReceived, true);
 
 		//Devolvemos la respuesta del bot
 		return ResponseEntity.ok().body(json.toJson(response));

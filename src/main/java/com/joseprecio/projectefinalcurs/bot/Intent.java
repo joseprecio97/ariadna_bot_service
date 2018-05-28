@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,8 +20,9 @@ import java.util.List;
  *
  */
 
-public class Intent {
+public class Intent implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private List<String> languages;
 	private LinkedHashMap<String, Parameter> parameters;

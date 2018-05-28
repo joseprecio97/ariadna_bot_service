@@ -95,10 +95,18 @@ function sendMessage(options){
 		//Obtenemos el conversation id de la cookie
 		var conversationId = getCookie("ariadna-service-conversationId");
 		
+		var url = "";
+		
+		if (options.production){
+			url = "/api/v1/command";
+		}else{
+			url = "/api/v1/dev-command";
+		}
+		
 		//Enviamos el mensaje
 		$.ajax({
 	        type: "POST",
-	        url: options.url + "/api/v1/command",
+	        url: options.url + url,
 	        dataType: 'json',
 	        contentType : 'application/json',
 	        async: false,

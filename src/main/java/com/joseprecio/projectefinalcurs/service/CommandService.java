@@ -16,7 +16,7 @@ import com.joseprecio.projectefinalcurs.model.CommandResponseModel;
 
 public interface CommandService {
 
-	public CommandResponseModel sendCommand(CommandReceivedModel command);
+	public CommandResponseModel sendCommand(CommandReceivedModel command, boolean productionBot);
 	
 	public HashMap<String, Intent> getIntents();
 
@@ -34,6 +34,10 @@ public interface CommandService {
 
 	public void removeIntent(Intent newIntent) throws Exception;
 
-	String getNewConversationId();
+	String getNewConversationId(boolean productionBot);
+
+	void train() throws Exception;
+
+	void deploy() throws Exception;
 	
 }

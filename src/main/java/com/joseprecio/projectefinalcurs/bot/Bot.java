@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -55,8 +56,10 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
  *
  */
 
-public class Bot {
+public class Bot implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	// Conversaciones en curso del BOT por usuario
 	private HashMap<String, Conversation> conversations;
 	// Todos los intents disponibles del BOT por id de intent
@@ -71,7 +74,8 @@ public class Bot {
 	private ResourceBundle loggerResources;
 	// Invocador javascript
 	private HashMap<String, Invocable> js = null;
-
+	private boolean isProduction;
+	
 	/**
 	 * Constructor
 	 * 
@@ -86,8 +90,17 @@ public class Bot {
 		this.conversations = new HashMap<String, Conversation>();
 		this.languagePrompts = new HashMap<String, Properties>();
 		this.js = new HashMap<String, Invocable>();
-	}
 		
+	}
+	
+	public boolean isProduction() {
+		return isProduction;
+	}
+
+	public void setProduction(boolean isProduction) {
+		this.isProduction = isProduction;
+	}
+
 	/**
 	 * Valida que no se haya generado un id de conversación ya existente
 	 * 
@@ -236,6 +249,22 @@ public class Bot {
 	}
 	
 	/**
+	 * Devuelve el directorio de configuración del Bot
+	 * 
+	 * @return
+	 */
+	public String getConfigFolder() {
+		String configFolder = "";
+		if(isProduction()) {
+			configFolder = BotConstants.BOT_DEPLOY_FOLDER;
+		}else {
+			configFolder = BotConstants.BOT_CONFIG_FOLDER;
+		}
+		
+		return configFolder;
+	}
+	
+	/**
 	 * Función que carga los scripts JS para cada intent
 	 * 
 	 * @throws Exception
@@ -255,9 +284,9 @@ public class Bot {
 				// Creamos el string builder
 				StringBuilder codigoJS = new StringBuilder();
 				String lineaJS = "";
-
+				
 				// Obtenemos el fichero JS del .jar
-				File f = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
+				File f = new File(getConfigFolder() + BotConstants.BOT_SCRIPTS_FOLDER
 						+ "//" + intent.getId() + ".js");
 				
 				// Leemos el fichero JS del intent
@@ -303,7 +332,7 @@ public class Bot {
 			Gson json = new Gson();
 			
 			//Leemos el contenido del fichero de configuración
-			File jsonFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD);
+			File jsonFile = new File(getConfigFolder() + BotConstants.BOT_CONFIG_LOAD);
 			
 			//Creamos un BufferedReader
 			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile)));
@@ -348,7 +377,7 @@ public class Bot {
 				Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_prompts_file"), language));
 
 				// Creamos un FileInputStream a partir del fichero prompts del lenguaje
-				File f = new File(BotConstants.BOT_CONFIG_FOLDER
+				File f = new File(getConfigFolder()
 						+ BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//" + language + "-prompts.json");
 				
 				// Leemos el fichero JS del intent
@@ -394,8 +423,7 @@ public class Bot {
 		// Array de streams de string
 		ObjectStream<String> lineStream = null;
 
-		File trainingFolder = new File(
-				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER);
+		File trainingFolder = new File(getConfigFolder() + BotConstants.BOT_TRAINING_FOLDER);
 
 		if (!trainingFolder.exists()) {
 			// No existe el directorio training en la carpeta dónde se encuentra el xml del
@@ -407,7 +435,7 @@ public class Bot {
 		for (Intent intent : intents.values()) {
 			for (String language : intent.getLanguages()) {
 				File languageTrainingFolder = new File(
-						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//" + language);
+						getConfigFolder() + BotConstants.BOT_TRAINING_FOLDER + "//" + language);
 
 				if (!(languageTrainingFolder.exists())) {
 					// No existe el directorio con el idioma para el training
@@ -415,7 +443,7 @@ public class Bot {
 				}
 
 				File intentTraining = new File(
-						BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//" + language + "//"
+						getConfigFolder() + BotConstants.BOT_TRAINING_FOLDER + "//" + language + "//"
 								+ language + "-" + intent.getId() + ".txt");
 
 				if (!(intentTraining.exists())) {
@@ -480,7 +508,7 @@ public class Bot {
 					// Concatenamos los NameSample
 					ObjectStream<NameSample> combinedNameSampleStream = ObjectStreamUtils
 							.createObjectStream(nameStreams.get(language).get(intent));
-
+					
 					// Entrenamos al modelo a detectar entidades
 					nameFinderME.get(language).put(intent,
 							new NameFinderME(NameFinderME.train(language, null, combinedNameSampleStream,
@@ -1047,9 +1075,6 @@ public class Bot {
 					// Establecemos el mensaje de la respuesta
 					commandResponse.setCommand(prompt);
 
-					// Mostramos la conversación en curso
-					Logger.writeConsole("DEBUG -- Conversation in course: " + json.toJson(conversation));
-
 					// Devolvemos la respuesta
 					return commandResponse; 
 				} catch (NullPointerException e) {
@@ -1211,13 +1236,6 @@ public class Bot {
 			try {
 				// Ejecutamos el script del evento nueva conversa
 				if ((newConversationEventResponse = onNewConversation(conversations.get(conversationId))) != null) {
-					// Mostramos la conversación que tiene en curso el usuario que ha enviado el
-					// parámetro
-					if (conversations.get(conversationId) != null) {
-						Logger.writeConsole(
-								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
-					}
-
 					// Devolvemos la respuesta del evento
 					return newConversationEventResponse;
 				}
@@ -1252,12 +1270,6 @@ public class Bot {
 				// Ejecutamos el script de set value
 				if ((setValueEventResponse = onParameterSetValue(conversations.get(conversationId),
 						commandReceived.getCommand())) != null) {
-					// Mostramos la conversación que tiene en curso el usuario que ha enviado el
-					// parámetro
-					if (conversations.get(conversationId) != null) {
-						Logger.writeConsole(
-								"DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
-					}
 
 					// Devolvemos la respuesta del evento
 					return setValueEventResponse;
@@ -1344,9 +1356,6 @@ public class Bot {
 					// Establecemos la respuesta
 					commandResponse.setCommand(prompt);
 
-					// Mostramos la conversa completa
-					Logger.writeConsole("DEBUG -- Conversation complete: " + json.toJson(conversations.get(conversationId)));
-
 					// Eliminamos la conversa del histórico
 					conversations.put(conversationId, null);
 				}
@@ -1368,12 +1377,6 @@ public class Bot {
 				// Devolvemos la respuesta del BOT
 				return commandResponse;
 			}
-		}
-
-		// Mostramos la conversación que tiene en curso el usuario que ha enviado el
-		// parámetro
-		if (conversations.get(conversationId) != null) {
-			Logger.writeConsole("DEBUG -- Conversation in course: " + json.toJson(conversations.get(conversationId)));
 		}
 
 		// Devolvemos la respuesta

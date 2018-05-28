@@ -44,8 +44,7 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 	@Override
 	public void setInfo(GoogleActionsSdkInformation info) throws IOException {
 		// Obtenemos el fichero
-		FileWriter file = new FileWriter(
-				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + BotConstants.BOT_GOOGLEACTIONS_FILE, false);
+		FileWriter file = new FileWriter(BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + BotConstants.BOT_GOOGLEACTIONS_FILE, false);
 		PrintWriter writer = new PrintWriter(file);
 
 		Gson json = new Gson();
@@ -73,7 +72,7 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 		
 		// Cargamos el fichero
 		File file = new File(
-				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + 
+				BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + 
 				BotConstants.BOT_GOOGLEACTIONS_FILE);
 
 		// Leemos el fichero
@@ -176,7 +175,7 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 			
 			// Obtenemos el fichero
 			FileWriter file = new FileWriter(
-					BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + so
+					BotConstants.BOT_GOOGLEACTIONS_FOLDER + "//" + so
 					+ "//" + language + "-action.json", false);
 			PrintWriter writer = new PrintWriter(file);
 
@@ -209,7 +208,7 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
 			prepareActionsJs();
 			
 			//Obtenemos el ejecutable
-            File pathToExecutable = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_GOOGLEACTIONS_FOLDER 
+            File pathToExecutable = new File(BotConstants.BOT_GOOGLEACTIONS_FOLDER 
             	+ "/" + so + "/gactions");
             
             //Establecemos los parámetros del ejecutable
@@ -226,7 +225,7 @@ public class GoogleActionsServiceImpl implements GoogleActionsService {
             ProcessBuilder builder = new ProcessBuilder(program);
             
             //Establecemos el directorio del proceso
-            builder.directory(new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_GOOGLEACTIONS_FOLDER + "/" + so).getAbsoluteFile());
+            builder.directory(new File(BotConstants.BOT_GOOGLEACTIONS_FOLDER + "/" + so).getAbsoluteFile());
             builder.redirectErrorStream(false);
             
             //Iniciamos el proceso

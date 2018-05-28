@@ -14,10 +14,51 @@
 				<div class="col-lg-12">
 					<h1 class="page-header">
 						<span th:text="#{dashboard}"></span>
+						<div class="btn-group pull-right" role="group" aria-label="Basic example">
+							<a class="btn btn-info" th:href="@{'/train?lang=' + ${locale}}" role="button">
+								<span th:text="#{trainbot}"></span>
+							</a>
+							<a class="btn btn-warning" th:href="@{'/deploy?lang=' + ${locale}}" role="button">
+								<span th:text="#{deploybot}"></span>
+							</a>
+						</div>
 					</h1>
 				</div>
 				<!-- /.col-lg-12 -->
 			</div>
+			
+			<div class="row" th:if="${trainerror}">
+				<div class="col-lg-12">
+					<div class="alert alert-danger">
+						<span th:text="${trainerrormessage}"></span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row" th:if="${deployerror}">
+				<div class="col-lg-12">
+					<div class="alert alert-danger">
+						<span th:text="${deployerrormessage}"></span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row" th:if="${deploysuccess}">
+				<div class="col-lg-12">
+					<div class="alert alert-success">
+						<span th:text="#{deploysuccess}"></span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row" th:if="${trainsucces}">
+				<div class="col-lg-12">
+					<div class="alert alert-success">
+						<span th:text="#{trainsucces}"></span>
+					</div>
+				</div>
+			</div>
+			
 			<div class="chat-panel panel panel-default">
 				<div class="panel-heading">
 					<i class="fa fa-comments fa-fw"></i> Chat
@@ -69,7 +110,7 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			$("#test_chat").ariadna_bot_interface({url:$("#test_chat").attr("ariadna-url")});
+			$("#test_chat").ariadna_bot_interface({url:$("#test_chat").attr("ariadna-url"),production:false});
 		});
 	</script>
 
