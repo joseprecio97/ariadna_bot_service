@@ -86,7 +86,7 @@ public class CommandServiceImpl implements CommandService {
 			bot_temp.init();
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "PROD"));
-			
+			bot_production.setError(false);
 			//Si no se producce ningún error durante el entrenamiento, actualizamos el Bot de producción
 			bot_production = bot_temp;
 		}catch(Exception e) {
@@ -117,7 +117,7 @@ public class CommandServiceImpl implements CommandService {
 			bot_temp.init();
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "DEV"));
-			
+			bot.setError(false);
 			//Si no se producce ningún error durante el entrenamiento, actualizamos el Bot de desarrollo
 			bot = bot_temp;
 		} catch (Exception e) {

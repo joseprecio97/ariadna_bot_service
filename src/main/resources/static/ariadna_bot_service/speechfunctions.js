@@ -15,7 +15,7 @@ $(document).ready(function () {
         recognition.interimResults = false;
 
         //Lenguaje del reconocimiento
-        recognition.lang = "es";
+        recognition.lang = conv_language;
         
         //Inicio del reconocimiento de voz
         recognition.onstart = function () {
@@ -24,6 +24,7 @@ $(document).ready(function () {
 
         //Tenemos un comando de voz detectado
         recognition.onresult = function (event) {
+        	recording = 0;
         	$("#microphone-btn").fadeTo( "slow" , 0.6);
         	
         	//Obtenemos el id de resultado
@@ -45,11 +46,19 @@ $(document).ready(function () {
 
         //Fin de reconocimiento de voz
         recognition.onend = function () {
-        	
+        	$("#microphone-btn").fadeTo( "slow" , 0.6);
         };
     }
 });
 
 function startRecording(){
-	recognition.start();
+	recognition.lang = conv_language;
+	
+	if(recording == 0){
+		recording = 1;
+		recognition.start();
+	}else{
+		recording = 0;
+		recognition.stop();
+	}
 }

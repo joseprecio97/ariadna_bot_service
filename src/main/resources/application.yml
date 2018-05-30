@@ -4,7 +4,8 @@ spring:
     mode: LEGACYHTML5
     encoding: utf-8
 auth:
-  username: 
-  password: 
-so: 
-ariadnabot.url: 
+  username: tutorial
+  password: tutorial
+so: windows
+ariadnabot.url: http://localhost:8080
+minconfidence: 0.5

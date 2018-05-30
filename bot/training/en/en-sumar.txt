@@ -1,0 +1,8 @@
+Addition
+Do an addition
+Addition <START:valor1> 1 <END> and <START:valor2> 5 <END>
+Addition <START:valor1> 3 <END> and <START:valor2> 6 <END>
+Addition <START:valor1> 4 <END> and <START:valor2> 7 <END>
+Addition <START:valor> 1 <END>
+Addition <START:valor1> 5 <END>
+Addition <START:valor1> 3 <END>

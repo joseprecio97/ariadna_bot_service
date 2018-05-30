@@ -11,12 +11,21 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.joseprecio.projectefinalcurs.bot.Bot;
 import com.joseprecio.projectefinalcurs.service.CommandService;
 
 @Controller
 @RequestMapping("/")
 public class BotController {
 
+	@Autowired
+	@Qualifier("bot")
+	private Bot bot;
+	
+	@Autowired
+	@Qualifier("bot_production")
+	private Bot bot_production;
+	
 	@Autowired
 	@Qualifier("CommandService")
 	private CommandService commandServiceImpl;
@@ -48,6 +57,9 @@ public class BotController {
 			model.addAttribute("deployerrormessage", e.getMessage());
 		}
 		
+		model.addAttribute("boterror", bot.isError());
+		model.addAttribute("productionboterror", bot_production.isError());
+		
 		//Devolvemos la vista
 		return ControllerConstants.indexView;
 	}
@@ -76,6 +88,9 @@ public class BotController {
 			model.addAttribute("trainerrormessage", e.getMessage());
 		}
 		
+		model.addAttribute("boterror", bot.isError());
+		model.addAttribute("productionboterror", bot_production.isError());
+		
 		//Devolvemos la vista
 		return ControllerConstants.indexView;
 	}
@@ -102,6 +117,9 @@ public class BotController {
 		//Pasamos a la vista el idioma
 		model.addAttribute("locale", locale.getLanguage());
 		model.addAttribute("ariadnaurl", ariadnaurl);
+		
+		model.addAttribute("boterror", bot.isError());
+		model.addAttribute("productionboterror", bot_production.isError());
 		
 		//Devolvemos la vista
 		return ControllerConstants.indexView;

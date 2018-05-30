@@ -1,0 +1,6 @@
+Restar
+restar
+Hacer una resta
+Restar <START:valor1> 2 <END> y <START:valor2> 5 <END>
+Restar <START:valor1> 1 <END> y <START:valor2> 9 <END>
+Restar <START:valor1> 4 <END> y <START:valor2> 3 <END>

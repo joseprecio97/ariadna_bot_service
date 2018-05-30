@@ -184,7 +184,11 @@ public class Intent implements Serializable {
 		b.close();
 		
 		//Eliminamos el fichero de entrenamiento
-		trainingFile.delete();
+		FileWriter trainingFileWriter = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
+				+ "//" + language + "//" + language + "-" + id + ".txt", false);
+		PrintWriter writer = new PrintWriter(trainingFileWriter);
+		// Guardamos los intents en el fichero
+		writer.println("");
 		
 		//Recorremos todas las frases de entrenamiento leidas
 		for(String phrase : phrases) {

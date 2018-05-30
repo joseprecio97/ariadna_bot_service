@@ -111,7 +111,7 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 		bot_production.setProduction(true);
 
 		/*ENTRENAMOS EL BOT DE DESARROLLO*/
-		try {
+		try {			
 			// Inicializamos el bot
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ MessageFormat.format(loggerResources.getString("msg_init_bot_intentTraining_load"), "DEV"));
@@ -119,6 +119,8 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "DEV"));
 		}catch(Exception e) {
+			//Hay un error en el bot
+			bot.setError(true);
 			//Pintamos la excepción
 			e.printStackTrace();
 		}
@@ -132,6 +134,8 @@ public class ProjectefinalcursApplication extends WebMvcConfigurerAdapter {
 			System.out.println(new Timestamp(System.currentTimeMillis()) + " :"
 					+ MessageFormat.format(loggerResources.getString("msg_end_bot_intentTraining_load"), "PROD"));
 		}catch(Exception e) {
+			//Marcamos un error en el bot
+			bot_production.setError(true);
 			//Pintamos la excepcion
 			e.printStackTrace();
 		}

@@ -1,0 +1,3 @@
+{"id":"sumar","languages":["es","en"],"parameters":{"valor1":{"name":"valor1","required":true,"type":"Integer","list":false},"valor2":{"name":"valor2","required":true,"type":"Integer","list":false},"resultado":{"name":"resultado","required":false,"type":"Integer","list":false}}}
+{"id":"resta","languages":["es"],"parameters":{"valor1":{"name":"valor1","required":true,"type":"Integer","list":false},"valor2":{"name":"valor2","required":true,"type":"Integer","list":false},"resultado":{"name":"resultado","required":false,"type":"Integer","list":false}}}
+{"id":"welcome","languages":["es","en"],"parameters":{}}

@@ -1,0 +1,8 @@
+Sumar
+Hacer una suma
+Sumar <START:valor1> 1 <END> mas <START:valor2> 5 <END>
+Sumar <START:valor1> 3 <END> mas <START:valor2> 9 <END>
+Sumar <START:valor1> 7 <END> mas <START:valor2> 2 <END>
+Sumar <START:valor1> 4 <END>
+Sumar <START:valor1> 6 <END>
+Sumar <START:valor1> 9 <END>

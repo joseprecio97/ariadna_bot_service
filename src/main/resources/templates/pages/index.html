@@ -27,6 +27,22 @@
 				<!-- /.col-lg-12 -->
 			</div>
 			
+			<div class="row" th:if="${boterror}">
+				<div class="col-lg-12">
+					<div class="alert alert-danger">
+						<span th:text="#{boterror}"></span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row" th:if="${productionboterror}">
+				<div class="col-lg-12">
+					<div class="alert alert-danger">
+						<span th:text="#{productionboterror}"></span>
+					</div>
+				</div>
+			</div>
+			
 			<div class="row" th:if="${trainerror}">
 				<div class="col-lg-12">
 					<div class="alert alert-danger">
@@ -58,30 +74,9 @@
 					</div>
 				</div>
 			</div>
-			
-			<div class="chat-panel panel panel-default">
-				<div class="panel-heading">
-					<i class="fa fa-comments fa-fw"></i> Chat
-					<div class="btn-group pull-right">
-						<button type="button"
-							class="btn btn-default btn-xs dropdown-toggle"
-							data-toggle="dropdown">
-							<i class="fa fa-chevron-down"></i>
-						</button>
-						<ul class="dropdown-menu slidedown">
-							<li>
-								<a href="#"> <i class="fa fa-refresh fa-fw"></i>
-										Refresh
-								</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-				<div id="test_chat" th:attr="ariadna-url=${ariadnaurl}">
-			</div>
+			<div id="test_chat" th:attr="ariadna-url=${ariadnaurl},locale=${locale}"></div>
 			<!-- /.panel .chat-panel -->
 			<!-- /.row -->
-		</div>
 		<!-- /#page-wrapper -->
 
 	</div>
@@ -110,7 +105,7 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			$("#test_chat").ariadna_bot_interface({url:$("#test_chat").attr("ariadna-url"),production:false});
+			$("#test_chat").ariadna_bot_interface({url:$("#test_chat").attr("ariadna-url"),locale: $("#test_chat").attr("locale"),production:false});
 		});
 	</script>
 

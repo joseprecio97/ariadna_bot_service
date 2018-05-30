@@ -26,6 +26,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.google.gson.Gson;
 import com.joseprecio.projectefinalcurs.ApplicationConstants;
 import com.joseprecio.projectefinalcurs.bot.exceptions.NotBotTrainingFolderException;
@@ -41,6 +43,7 @@ import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
+import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -59,6 +62,9 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 public class Bot implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	@Value("${minconfidence}")
+	private float minConfidence;
 	
 	// Conversaciones en curso del BOT por usuario
 	private HashMap<String, Conversation> conversations;
@@ -75,7 +81,8 @@ public class Bot implements Serializable {
 	// Invocador javascript
 	private HashMap<String, Invocable> js = null;
 	private boolean isProduction;
-	
+	private boolean error = false;
+
 	/**
 	 * Constructor
 	 * 
@@ -90,9 +97,17 @@ public class Bot implements Serializable {
 		this.conversations = new HashMap<String, Conversation>();
 		this.languagePrompts = new HashMap<String, Properties>();
 		this.js = new HashMap<String, Invocable>();
-		
+
 	}
-	
+
+	public boolean isError() {
+		return error;
+	}
+
+	public void setError(boolean error) {
+		this.error = error;
+	}
+
 	public boolean isProduction() {
 		return isProduction;
 	}
@@ -108,13 +123,13 @@ public class Bot implements Serializable {
 	 * @return
 	 */
 	public boolean validGeneratedConversationId(String generatedConversationId) {
-		if(this.conversations.get(generatedConversationId) == null) {
+		if (this.conversations.get(generatedConversationId) == null) {
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
-	
+
 	public HashMap<String, Properties> getLanguagePrompts() {
 		return languagePrompts;
 	}
@@ -125,119 +140,119 @@ public class Bot implements Serializable {
 	 * @param name
 	 * @return
 	 */
-	public HashMap<String, Intent> removeIntent(String name){
+	public HashMap<String, Intent> removeIntent(String name) {
 		intents.remove(name);
-		
+
 		return intents;
 	}
-	
+
 	/**
 	 * Añade un intent
 	 * 
 	 * @param newIntent
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public HashMap<String, Intent> addIntent(Intent newIntent) throws IOException{
-		//Creamos el fichero para cada lenguaje disponible del intent
-		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
-			//Creamos el fichero de entrenamiento
-			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER
-					+ "//" + language + "//" + language + "-" + newIntent.getId() + ".txt"); 
-			
-			//Creamos el fichero
+	public HashMap<String, Intent> addIntent(Intent newIntent) throws IOException {
+		// Creamos el fichero para cada lenguaje disponible del intent
+		for (String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
+			// Creamos el fichero de entrenamiento
+			File trainingFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_TRAINING_FOLDER + "//"
+					+ language + "//" + language + "-" + newIntent.getId() + ".txt");
+
+			// Creamos el fichero
 			trainingFile.createNewFile();
-			
-			//Añadimos los prompts del intent que estamos creando
+
+			// Añadimos los prompts del intent que estamos creando
 			languagePrompts.get(language).put(newIntent.getId() + "_error", "");
 			languagePrompts.get(language).put(newIntent.getId() + "_new_conversation_error", "");
 			languagePrompts.get(language).put(newIntent.getId() + "_end_conversation_error", "");
 			languagePrompts.get(language).put(newIntent.getId() + "_final_message", "");
 			languagePrompts.get(language).put(newIntent.getId() + "_cancel", "");
 		}
-		
-		//Creamos el fichero de scripts
-		File jsFile = new File(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER
-				+ "//" + newIntent.getId() + ".js"); 
-		
-		//Creamos el fichero
+
+		// Creamos el fichero de scripts
+		File jsFile = new File(
+				BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_SCRIPTS_FOLDER + "//" + newIntent.getId() + ".js");
+
+		// Creamos el fichero
 		jsFile.createNewFile();
-		
-		//Añadimos el intent al array de intents
+
+		// Añadimos el intent al array de intents
 		intents.put(newIntent.getId(), newIntent);
-		
-		//Devolvemos el HashMap con los intents
+
+		// Devolvemos el HashMap con los intents
 		return intents;
 	}
-	
+
 	/**
 	 * Actualiza un intent
 	 * 
 	 * @param intentSave
 	 * @return
 	 */
-	public HashMap<String, Intent> saveIntent(Intent intentSave){
-		//Actualizamos el intent
+	public HashMap<String, Intent> saveIntent(Intent intentSave) {
+		// Actualizamos el intent
 		intents.replace(intentSave.getId(), intentSave);
-		
-		//Devolvemos el HashMap de intent
+
+		// Devolvemos el HashMap de intent
 		return intents;
 	}
-	
+
 	/**
 	 * Guarda los intents en el fichero de configuración
 	 * 
 	 * @throws Exception
 	 */
 	public void saveIntents() throws Exception {
-		//Obtenemos el fichero de configuración del bot
+		// Obtenemos el fichero de configuración del bot
 		FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_CONFIG_LOAD, false);
 		PrintWriter writer = new PrintWriter(jsonFile);
 
 		Gson json = new Gson();
-		
-		for(Intent intent : intents.values()) {
-			//Guardamos los intents en el fichero
+
+		for (Intent intent : intents.values()) {
+			// Guardamos los intents en el fichero
 			writer.println(json.toJson(intent));
 		}
-		
-		//Cerramos el stream
+
+		// Cerramos el stream
 		writer.close();
 		jsonFile.close();
 	}
-	
+
 	/**
 	 * Guarda los prompts en disco
 	 * 
 	 * @throws Exception
 	 */
 	public void savePrompts() throws Exception {
-		for(String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
-			//Obtenemos el fichero de prompts
-			FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER
-					+ BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//" + language + "-prompts.json", false);
+		for (String language : BotConstants.BOT_AVAILABLE_LANGUAGE) {
+			// Obtenemos el fichero de prompts
+			FileWriter jsonFile = new FileWriter(BotConstants.BOT_CONFIG_FOLDER + BotConstants.BOT_PROMPTS_FOLDER + "//"
+					+ language + "//" + language + "-prompts.json", false);
 			PrintWriter writer = new PrintWriter(jsonFile);
 
 			Gson json = new Gson();
-		
-			//Guardamos los intents en el fichero
+
+			// Guardamos los intents en el fichero
 			writer.println(json.toJson(languagePrompts.get(language)));
-		
-			//Cerramos el stream
+
+			// Cerramos el stream
 			writer.close();
 			jsonFile.close();
 		}
 	}
-	
+
 	/**
 	 * Devuelve los intents creados en el bot
 	 * 
 	 * @return
 	 */
-	public HashMap<String, Intent> getIntents(){
+	public HashMap<String, Intent> getIntents() {
 		return intents;
 	}
-	
+
 	/**
 	 * Devuelve un intent
 	 * 
@@ -247,7 +262,7 @@ public class Bot implements Serializable {
 	public Intent getIntent(String id) {
 		return intents.get(id);
 	}
-	
+
 	/**
 	 * Devuelve el directorio de configuración del Bot
 	 * 
@@ -255,15 +270,15 @@ public class Bot implements Serializable {
 	 */
 	public String getConfigFolder() {
 		String configFolder = "";
-		if(isProduction()) {
+		if (isProduction()) {
 			configFolder = BotConstants.BOT_DEPLOY_FOLDER;
-		}else {
+		} else {
 			configFolder = BotConstants.BOT_CONFIG_FOLDER;
 		}
-		
+
 		return configFolder;
 	}
-	
+
 	/**
 	 * Función que carga los scripts JS para cada intent
 	 * 
@@ -284,11 +299,10 @@ public class Bot implements Serializable {
 				// Creamos el string builder
 				StringBuilder codigoJS = new StringBuilder();
 				String lineaJS = "";
-				
+
 				// Obtenemos el fichero JS del .jar
-				File f = new File(getConfigFolder() + BotConstants.BOT_SCRIPTS_FOLDER
-						+ "//" + intent.getId() + ".js");
-				
+				File f = new File(getConfigFolder() + BotConstants.BOT_SCRIPTS_FOLDER + "//" + intent.getId() + ".js");
+
 				// Leemos el fichero JS del intent
 				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
 				while ((lineaJS = b.readLine()) != null) {
@@ -327,26 +341,26 @@ public class Bot implements Serializable {
 	 */
 	private void LoadBotConfig() throws Exception {
 		try {
-			//Objetos
+			// Objetos
 			String lineaJSON = "";
 			Gson json = new Gson();
-			
-			//Leemos el contenido del fichero de configuración
+
+			// Leemos el contenido del fichero de configuración
 			File jsonFile = new File(getConfigFolder() + BotConstants.BOT_CONFIG_LOAD);
-			
-			//Creamos un BufferedReader
+
+			// Creamos un BufferedReader
 			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile)));
-			
-			//Leemos el contenido del JSON
+
+			// Leemos el contenido del JSON
 			while ((lineaJSON = b.readLine()) != null) {
-				//Cargamos el intent del bot a partir del JSON leido
+				// Cargamos el intent del bot a partir del JSON leido
 				Intent intentTemp = json.fromJson(lineaJSON, Intent.class);
-				
-				//Añadimos el intent leído en el hashmap
+
+				// Añadimos el intent leído en el hashmap
 				intents.put(intentTemp.getId(), intentTemp);
 			}
-			
-			//Cerramos el BuffredReader
+
+			// Cerramos el BuffredReader
 			b.close();
 		} catch (Exception e) {
 			// Lanzamos la excepción producida hacia arriba
@@ -371,28 +385,28 @@ public class Bot implements Serializable {
 			String lineaJS = null;
 			Gson json = new Gson();
 			Properties prompts = null;
-			
+
 			try {
 				// Mostramos el fichero de prompts que se va a cargar
 				Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_prompts_file"), language));
 
 				// Creamos un FileInputStream a partir del fichero prompts del lenguaje
-				File f = new File(getConfigFolder()
-						+ BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//" + language + "-prompts.json");
-				
+				File f = new File(getConfigFolder() + BotConstants.BOT_PROMPTS_FOLDER + "//" + language + "//"
+						+ language + "-prompts.json");
+
 				// Leemos el fichero JS del intent
 				BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
 				while ((lineaJS = b.readLine()) != null) {
-					//Cargamos el json
+					// Cargamos el json
 					prompts = json.fromJson(lineaJS, Properties.class);
 				}
 				b.close();
-				
-				//Comprovamos si el objeto properties no es nulo
-				if(prompts == null) {
+
+				// Comprovamos si el objeto properties no es nulo
+				if (prompts == null) {
 					prompts = new Properties();
 				}
-				
+
 				// Ponemos el properties con los prompts en el mapa
 				languagePrompts.put(language, prompts);
 
@@ -442,9 +456,8 @@ public class Bot implements Serializable {
 					throw new NotLanguageIntentTrainingException(intent.getId(), language);
 				}
 
-				File intentTraining = new File(
-						getConfigFolder() + BotConstants.BOT_TRAINING_FOLDER + "//" + language + "//"
-								+ language + "-" + intent.getId() + ".txt");
+				File intentTraining = new File(getConfigFolder() + BotConstants.BOT_TRAINING_FOLDER + "//" + language
+						+ "//" + language + "-" + intent.getId() + ".txt");
 
 				if (!(intentTraining.exists())) {
 					// No existe el fichero de entrenamiento para el intent
@@ -502,24 +515,31 @@ public class Bot implements Serializable {
 
 				// Cerramos el Stream
 				combinedDocumentSampleStream.close();
+				for (ObjectStream<DocumentSample> stream : categoryStreams.get(language)) {
+					stream.close();
+				}
 
 				// Entrenamos al bot a identificar entities segun el idioma
 				for (String intent : nameFinderME.get(language).keySet()) {
 					// Concatenamos los NameSample
 					ObjectStream<NameSample> combinedNameSampleStream = ObjectStreamUtils
 							.createObjectStream(nameStreams.get(language).get(intent));
-					
-					// Entrenamos al modelo a detectar entidades
-					nameFinderME.get(language).put(intent,
-							new NameFinderME(NameFinderME.train(language, null, combinedNameSampleStream,
-									TrainingParameters.defaultParams(), (AdaptiveFeatureGenerator) null,
-									Collections.<String, Object>emptyMap())));
-					
+
+					try {
+						// Entrenamos al modelo a detectar entidades
+						nameFinderME.get(language).put(intent,
+								new NameFinderME(NameFinderME.train(language, null, combinedNameSampleStream,
+										TrainingParameters.defaultParams(), (AdaptiveFeatureGenerator) null,
+										Collections.<String, Object>emptyMap())));
+					} catch (IllegalArgumentException e) {
+
+					}
+
 					// Cerramos el stream
 					combinedNameSampleStream.close();
+					nameStreams.get(language).get(intent).close();
 				}
-				
-				
+
 			} catch (NullPointerException e) {
 
 			}
@@ -538,12 +558,12 @@ public class Bot implements Serializable {
 		HashMap<String, HashMap<String, ObjectStream<NameSample>>> nameStreams = new HashMap<String, HashMap<String, ObjectStream<NameSample>>>();
 
 		// Cargamos la configuración del bot
-		Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_config_load"),
-				BotConstants.BOT_CONFIG_LOAD));
+		Logger.writeConsole(
+				MessageFormat.format(loggerResources.getString("msg_bot_config_load"), BotConstants.BOT_CONFIG_LOAD));
 		LoadBotConfig();
-		Logger.writeConsole(MessageFormat.format(loggerResources.getString("msg_bot_config_loaded"),
-				BotConstants.BOT_CONFIG_LOAD));
-		
+		Logger.writeConsole(
+				MessageFormat.format(loggerResources.getString("msg_bot_config_loaded"), BotConstants.BOT_CONFIG_LOAD));
+
 		// Cargamos los scripts de negocio del bot
 		Logger.writeConsole(loggerResources.getString("msg_init_js_load"));
 		LoadJSScripts();
@@ -575,13 +595,28 @@ public class Bot implements Serializable {
 	private String detectIntent(String text, String language) {
 		// Obtenemos el detector de categorias según el idioma del usuario
 		DocumentCategorizerME langCategorizer = categorizer.get(language);
-
+		float threshold = minConfidence;
+		
 		// Detectamos el intent
 		double[] outcome = langCategorizer.categorize(text);
 		String intent = langCategorizer.getBestCategory(outcome);
 
-		// Devolvemos el intent detectado
-		return intent;
+		//Calculamos la confidencialidad del intent detetado
+		double max = -Double.MAX_VALUE;
+		for (double d : outcome) {
+			if (d > max) {
+				max = d;
+			}
+		}
+
+		if (max > threshold) {
+			// Devolvemos el intent detectado
+			return intent;
+		}else {
+			//Devolvemos el intent de no reconocimiento
+			return BotConstants.BOT_NOINTENTKNOW;
+		}
+
 	}
 
 	/**
@@ -714,7 +749,8 @@ public class Bot implements Serializable {
 		// Obtenemos el detector de entidades según el idioma del usuario
 		if ((langNameFinder = nameFinderME.get(conversation.getLanguage()).get(conversation.getId())) != null) {
 			// Detectamos las entidades de la cadena
-			String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
+			String[] tokens = SimpleTokenizer.INSTANCE.tokenize(text);
+			// String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
 			Span[] spans = langNameFinder.find(tokens);
 			String[] names = Span.spansToStrings(spans, tokens);
 
@@ -793,9 +829,9 @@ public class Bot implements Serializable {
 							}
 						}
 
-						//Formateamos el prompt
+						// Formateamos el prompt
 						prompt = formatPrompt(prompt, conversation);
-						
+
 						// Establecemos el prompt del bot
 						commandResponse.setCommand(prompt);
 
@@ -815,9 +851,9 @@ public class Bot implements Serializable {
 											conversation.getId() + BotConstants.BOT_CONVERSATIONCANCEL_SUFIX);
 								}
 
-								//Formateamos el prompt
+								// Formateamos el prompt
 								prompt = formatPrompt(prompt, conversation);
-								
+
 								// Establecemos la respuesta
 								commandResponse.setCommand(prompt);
 
@@ -919,12 +955,12 @@ public class Bot implements Serializable {
 									.getProperty(conversation.getId() + BotConstants.BOT_NEWCONVERSATIONERROR_SUFIX);
 						}
 
-						//Formateamos el prompt
+						// Formateamos el prompt
 						prompt = formatPrompt(prompt, conversation);
-						
+
 						// Establecemos la respuesta del BOT
 						commandResponse.setCommand(prompt);
-						
+
 						// Eliminamos la conversa
 						conversations.replace(conversation.getUsername(), null);
 
@@ -943,9 +979,9 @@ public class Bot implements Serializable {
 											conversation.getId() + BotConstants.BOT_CONVERSATIONCANCEL_SUFIX);
 								}
 
-								//Formateamos el prompt
+								// Formateamos el prompt
 								prompt = formatPrompt(prompt, conversation);
-								
+
 								// Establecemos la respuesta
 								commandResponse.setCommand(prompt);
 
@@ -988,61 +1024,61 @@ public class Bot implements Serializable {
 	 * @return
 	 */
 	private String formatPrompt(String prompt, Conversation conversation) {
-		//Creamos un array 
+		// Creamos un array
 		ArrayList<String> params = new ArrayList<String>();
-		
-		for(Parameter param : conversation.getParameters().values()) {
-			if(!param.isList()) {
-				if(param.getType().equals("String")) {
+
+		for (Parameter param : conversation.getParameters().values()) {
+			if (!param.isList()) {
+				if (param.getType().equals("String")) {
 					params.add((String) param.getValue());
-				}else {
+				} else {
 					params.add(String.valueOf(param.getValue()));
 				}
-			}else {
+			} else {
 				if (param.getType().equals("String")) {
 					// Recuperamos el listado de valores
 					ArrayList<String> listValues = (ArrayList<String>) param.getValue();
 
-					//Concatenamos los valores
+					// Concatenamos los valores
 					String str = "";
-					for(String value: listValues) {
-						if(!str.equals("")) {
+					for (String value : listValues) {
+						if (!str.equals("")) {
 							str += ", ";
 						}
-						
+
 						str += value;
 					}
-					
-					//Añadimos la cadena al array de parametros
+
+					// Añadimos la cadena al array de parametros
 					params.add(str);
 				} else {
 					// Recuperamos el listado de valores
 					ArrayList<Integer> listValues = (ArrayList<Integer>) param.getValue();
 
-					//Concatenamos los valores
+					// Concatenamos los valores
 					String str = "";
-					for(Integer value: listValues) {
-						if(!str.equals("")) {
+					for (Integer value : listValues) {
+						if (!str.equals("")) {
 							str += ", ";
 						}
-						
+
 						str += String.valueOf(value);
 					}
-					
-					//Añadimos la cadena al array de parametros
+
+					// Añadimos la cadena al array de parametros
 					params.add(str);
 				}
 
 			}
 		}
-		
-		//Formateamos el prompt
+
+		// Formateamos el prompt
 		prompt = MessageFormat.format(prompt, params.toArray());
-		
-		//Devolvemos el prompt formateado
+
+		// Devolvemos el prompt formateado
 		return prompt;
 	}
-	
+
 	/**
 	 * Obtiene el próximo parámetro a solicitar al usuario
 	 * 
@@ -1069,14 +1105,14 @@ public class Bot implements Serializable {
 					prompt = languagePrompts.get(conversation.getLanguage())
 							.getProperty(conversation.getId() + "_" + parameter.getName());
 
-					//Formateamos el prompt
+					// Formateamos el prompt
 					prompt = formatPrompt(prompt, conversation);
-					
+
 					// Establecemos el mensaje de la respuesta
 					commandResponse.setCommand(prompt);
 
 					// Devolvemos la respuesta
-					return commandResponse; 
+					return commandResponse;
 				} catch (NullPointerException e) {
 					// No se soporta el lenguaje de la conversación
 					throw new NotLanguageIntentTrainingException(conversation.getId(), conversation.getLanguage());
@@ -1136,10 +1172,10 @@ public class Bot implements Serializable {
 						// Obtenemos el mensaje de que el intent se ha completado correctamente
 						prompt = languagePrompts.get(conversation.getLanguage())
 								.getProperty(conversation.getId() + BotConstants.BOT_ENDCONVERSATIONMESSAGE_SUFIX);
-						
-						//Comprovamos si nos llega una conversación en la respuesta
-						if(response.getConversation() != null) {
-							//Actualizamos la conversacion
+
+						// Comprovamos si nos llega una conversación en la respuesta
+						if (response.getConversation() != null) {
+							// Actualizamos la conversacion
 							conversations.replace(conversation.getUsername(), response.getConversation());
 						}
 					}
@@ -1191,195 +1227,195 @@ public class Bot implements Serializable {
 	 * @throws ScriptException
 	 */
 	public CommandResponseModel sendMessage(CommandReceivedModel commandReceived) {
-		Gson json = new Gson();
-		String conversationId = commandReceived.getConversationId();
-		String language = commandReceived.getLanguage();
-		String prompt = null;
-		CommandResponseModel commandResponse = new CommandResponseModel();
+		// Si no hay error
+		if (!error) {
+			String conversationId = commandReceived.getConversationId();
+			String language = commandReceived.getLanguage();
+			String prompt = null;
+			CommandResponseModel commandResponse = new CommandResponseModel();
 
-		// Comprovamos si el usuario ha iniciado alguna conversación con el Bot
-		if (conversations.get(conversationId) == null) {
-			// Detectamos el intent a partir del comando recibido
-			String intent = detectIntent(commandReceived.getCommand(), language);
+			// Comprovamos si el usuario ha iniciado alguna conversación con el Bot
+			if (conversations.get(conversationId) == null) {
+				// Detectamos el intent a partir del comando recibido
+				String intent = detectIntent(commandReceived.getCommand(), language);
 
-			// Creamos una nueva conversación para el usuario, el intent detectado y el
-			// lenguaje del usuario
-			Conversation newConversation = createConversation(conversationId, intent, language);
+				// Creamos una nueva conversación para el usuario, el intent detectado y el
+				// lenguaje del usuario
+				Conversation newConversation = createConversation(conversationId, intent, language);
 
-			try {
-				// Detectamos las entidades del texto
-				findEntities(commandReceived.getCommand(), newConversation);
-			} catch (NotParameterIntentException e) {
-				//Mostramos la excepción
-				e.printStackTrace();
-				
-				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-				// al parámetro
-				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
-						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				try {
+					// Detectamos las entidades del texto
+					findEntities(commandReceived.getCommand(), newConversation);
+				} catch (Exception e) {
+					// Mostramos la excepción
+					e.printStackTrace();
 
-				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(conversationId));
-				
-				// Establecemos el prompt como mensaje de respuesta
-				commandResponse.setCommand(prompt);
-				
-				// Devolvemos la respuesta del BOT
-				return commandResponse;
-			}
+					// Establecemos el prompt como mensaje de respuesta
+					commandResponse.setCommand("");
 
-			// Añadimos la conversa al listado de conversas activas del bot
-			conversations.put(conversationId, newConversation);
-
-			CommandResponseModel newConversationEventResponse = null;
-
-			try {
-				// Ejecutamos el script del evento nueva conversa
-				if ((newConversationEventResponse = onNewConversation(conversations.get(conversationId))) != null) {
-					// Devolvemos la respuesta del evento
-					return newConversationEventResponse;
+					// Devolvemos la respuesta del BOT
+					return commandResponse;
 				}
-			} catch (ScriptException SE) {
-				// Error de ejecución del script
 
-				//Mostramos la traza de error
-				SE.printStackTrace();
-				
-				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-				// al parámetro
-				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
-						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+				// Añadimos la conversa al listado de conversas activas del bot
+				conversations.put(conversationId, newConversation);
 
-				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(conversationId));
-				
-				// Establecemos el prompt como mensaje de respuesta
-				commandResponse.setCommand(prompt);
-				
-				// Devolvemos la respuesta del BOT
-				return commandResponse;
-			}
-		} else {
-			try {
-				// Establecemos el valor del parámetro
-				setParameterValue(conversations.get(conversationId), conversations.get(conversationId).getNextCommingParameter(),
-						commandReceived.getCommand(), false);
+				CommandResponseModel newConversationEventResponse = null;
 
-				CommandResponseModel setValueEventResponse = null;
-
-				// Ejecutamos el script de set value
-				if ((setValueEventResponse = onParameterSetValue(conversations.get(conversationId),
-						commandReceived.getCommand())) != null) {
-
-					// Devolvemos la respuesta del evento
-					return setValueEventResponse;
-				}
-			} catch (ScriptException SE) {
-				// Error de ejecución del script
-
-				//Mostramos la traza de error
-				SE.printStackTrace();
-				
-				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-				// al parámetro
-				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
-						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
-
-				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(conversationId));
-				
-				// Establecemos el prompt como mensaje de respuesta
-				commandResponse.setCommand(prompt);
-				
-				// Devolvemos la respuesta del BOT
-				return commandResponse;
-			} catch (Exception e) {
-				// Error con el valor que se ha dado al parámetro
-
-				//Mostramos la excepción
-				e.printStackTrace();
-				
-				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-				// al parámetro
-				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
-						.getProperty(conversations.get(conversationId).getId() + "_"
-								+ conversations.get(conversationId).getNextCommingParameter()
-								+ BotConstants.BOT_PARAMETERBADVALUE_SUFIX);
-
-				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(conversationId));
-				
-				// Establecemos el prompt como mensaje de respuesta
-				commandResponse.setCommand(prompt);
-				
-				// Devolvemos la respuesta del BOT
-				return commandResponse;
-			}
-		}
-
-		// Comprovamos si no sabemos cual es el siguiente parámetro
-		if (conversations.get(conversationId).getNextCommingParameter() == null) {
-			CommandResponseModel nextCommingParameter = null;
-
-			try {
-				// Obtenemos el prompt para pedir el próximo parámetro
-				if ((nextCommingParameter = getNextCommingParameterPrompt(conversations.get(conversationId))) != null) {
-					return nextCommingParameter;
-				} else {
-					try {
-						// Ejecutamos el script final
-						prompt = onConversationEnd(conversations.get(conversationId));
-					} catch (ScriptException SE) {
-						// Error de ejecución del script
-
-						//Mostramos la traza
-						SE.printStackTrace();
-						
-						// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-						// al parámetro
-						prompt = languagePrompts.get(conversations.get(conversationId).getLanguage()).getProperty(
-								conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
-
-						//Formateamos el prompt
-						prompt = formatPrompt(prompt, conversations.get(conversationId));
-						
-						// Establecemos el prompt como mensaje de respuesta
-						commandResponse.setCommand(prompt);
-						
-						// Devolvemos la respuesta del BOT
-						return commandResponse;
+				try {
+					// Ejecutamos el script del evento nueva conversa
+					if ((newConversationEventResponse = onNewConversation(conversations.get(conversationId))) != null) {
+						// Devolvemos la respuesta del evento
+						return newConversationEventResponse;
 					}
+				} catch (ScriptException SE) {
+					// Error de ejecución del script
 
-					//Formateamos el prompt
+					// Mostramos la traza de error
+					SE.printStackTrace();
+
+					// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
+					// al parámetro
+					prompt = languagePrompts.get(conversations.get(conversationId).getLanguage()).getProperty(
+							conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+
+					// Formateamos el prompt
 					prompt = formatPrompt(prompt, conversations.get(conversationId));
-					
-					// Establecemos la respuesta
+
+					// Establecemos el prompt como mensaje de respuesta
 					commandResponse.setCommand(prompt);
 
-					// Eliminamos la conversa del histórico
-					conversations.put(conversationId, null);
+					// Devolvemos la respuesta del BOT
+					return commandResponse;
 				}
-			} catch (NotLanguageIntentTrainingException e) {
-				//Mostramos la traza
-				e.printStackTrace();
-				
-				// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
-				// al parámetro
-				prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
-						.getProperty(conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+			} else {
+				try {
+					// Establecemos el valor del parámetro
+					setParameterValue(conversations.get(conversationId),
+							conversations.get(conversationId).getNextCommingParameter(), commandReceived.getCommand(),
+							false);
 
-				//Formateamos el prompt
-				prompt = formatPrompt(prompt, conversations.get(conversationId));
-				
-				// Establecemos el prompt como mensaje de respuesta
-				commandResponse.setCommand(prompt);
-				
-				// Devolvemos la respuesta del BOT
-				return commandResponse;
+					CommandResponseModel setValueEventResponse = null;
+
+					// Ejecutamos el script de set value
+					if ((setValueEventResponse = onParameterSetValue(conversations.get(conversationId),
+							commandReceived.getCommand())) != null) {
+
+						// Devolvemos la respuesta del evento
+						return setValueEventResponse;
+					}
+				} catch (ScriptException SE) {
+					// Error de ejecución del script
+
+					// Mostramos la traza de error
+					SE.printStackTrace();
+
+					// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
+					// al parámetro
+					prompt = languagePrompts.get(conversations.get(conversationId).getLanguage()).getProperty(
+							conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+
+					// Formateamos el prompt
+					prompt = formatPrompt(prompt, conversations.get(conversationId));
+
+					// Establecemos el prompt como mensaje de respuesta
+					commandResponse.setCommand(prompt);
+
+					// Devolvemos la respuesta del BOT
+					return commandResponse;
+				} catch (Exception e) {
+					// Error con el valor que se ha dado al parámetro
+
+					// Mostramos la excepción
+					e.printStackTrace();
+
+					// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
+					// al parámetro
+					prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+							.getProperty(conversations.get(conversationId).getId() + "_"
+									+ conversations.get(conversationId).getNextCommingParameter()
+									+ BotConstants.BOT_PARAMETERBADVALUE_SUFIX);
+
+					// Formateamos el prompt
+					prompt = formatPrompt(prompt, conversations.get(conversationId));
+
+					// Establecemos el prompt como mensaje de respuesta
+					commandResponse.setCommand(prompt);
+
+					// Devolvemos la respuesta del BOT
+					return commandResponse;
+				}
 			}
-		}
 
-		// Devolvemos la respuesta
-		return commandResponse;
+			// Comprovamos si no sabemos cual es el siguiente parámetro
+			if (conversations.get(conversationId).getNextCommingParameter() == null) {
+				CommandResponseModel nextCommingParameter = null;
+
+				try {
+					// Obtenemos el prompt para pedir el próximo parámetro
+					if ((nextCommingParameter = getNextCommingParameterPrompt(
+							conversations.get(conversationId))) != null) {
+						return nextCommingParameter;
+					} else {
+						try {
+							// Ejecutamos el script final
+							prompt = onConversationEnd(conversations.get(conversationId));
+						} catch (ScriptException SE) {
+							// Error de ejecución del script
+
+							// Mostramos la traza
+							SE.printStackTrace();
+
+							// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
+							// al parámetro
+							prompt = languagePrompts.get(conversations.get(conversationId).getLanguage())
+									.getProperty(conversations.get(conversationId).getId()
+											+ BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+
+							// Formateamos el prompt
+							prompt = formatPrompt(prompt, conversations.get(conversationId));
+
+							// Establecemos el prompt como mensaje de respuesta
+							commandResponse.setCommand(prompt);
+
+							// Devolvemos la respuesta del BOT
+							return commandResponse;
+						}
+
+						// Formateamos el prompt
+						prompt = formatPrompt(prompt, conversations.get(conversationId));
+
+						// Establecemos la respuesta
+						commandResponse.setCommand(prompt);
+
+						// Eliminamos la conversa del histórico
+						conversations.put(conversationId, null);
+					}
+				} catch (NotLanguageIntentTrainingException e) {
+					// Mostramos la traza
+					e.printStackTrace();
+
+					// Obtenemos el mensaje que indica que hay un error con el valor que se ha dado
+					// al parámetro
+					prompt = languagePrompts.get(conversations.get(conversationId).getLanguage()).getProperty(
+							conversations.get(conversationId).getId() + BotConstants.BOT_SENDMESSAGEERROR_SUFIX);
+
+					// Formateamos el prompt
+					prompt = formatPrompt(prompt, conversations.get(conversationId));
+
+					// Establecemos el prompt como mensaje de respuesta
+					commandResponse.setCommand(prompt);
+
+					// Devolvemos la respuesta del BOT
+					return commandResponse;
+				}
+			}
+
+			// Devolvemos la respuesta
+			return commandResponse;
+		} else {
+			// Devolvemos nulo
+			return null;
+		}
 	}
 }

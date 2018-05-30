@@ -10,7 +10,7 @@ package com.joseprecio.projectefinalcurs.bot;
 public class BotConstants {
 
 	public static final String BOT_GOOGLEASSISTANT_URL = "/api/v1/googleassistant";
-	
+	public static final String BOT_NOINTENTKNOW = "no_intent_know";
 	public static final String BOT_DEPLOY_FOLDER = "bot_published//";
 	public static final String BOT_CONFIG_FOLDER = "bot//";
 	public static final String BOT_CONFIG_LOAD = "bot.json";

@@ -9,6 +9,36 @@
 					//Actualizamos el objeto
 					globalOptions = options;
 					
+					//Creamos el header div
+					var panel_header = $('<div class="panel-heading">');
+					var chat_text = $('<i class="fa fa-comments fa-fw"></i>');
+					var btn_group_langs = $('<div class="btn-group pull-right">');
+					var select_langs = $('<select style="margin-top: -3px;padding: 4px;border-radius: 5px;">');
+					var es_option = $('<option value="es">Spanish</option>');
+					var en_option = $('<option value="en">English</option>');
+					
+					if(options.locale=='es'){
+						es_option.attr("selected", true);
+					}else{
+						en_option.attr("selected", true);
+					}
+					
+					select_langs.append(es_option);
+					select_langs.append(en_option);
+					
+					select_langs.change(function(){
+						conv_language=this.value;
+					});
+					conv_language=options.locale;
+					btn_group_langs.append(select_langs);
+					
+					panel_header.append(chat_text);
+					panel_header.append(btn_group_langs);
+					element.append(panel_header);
+					element.addClass('chat-panel');
+					element.addClass('panel');
+					element.addClass('panel-default');
+					
 					// Creamos el div panel body
 					var panel_body = $("<div/>");
 					panel_body.addClass("panel-body");
@@ -31,13 +61,13 @@
 					//Imagen micrófono
 					var img = $('<img id="microphone-btn" src="' + options.url + '/images/microphone.png" class="img-circle" style="height: 30px;width: 30px;float: left; margin-right: 10px;" />');
 					img.fadeTo( "slow" , 0.6);
-					input_group.append(img);
-					input_group.click(function(){
+					img.click(function(){
 						if ('webkitSpeechRecognition' in window) {
 							$("#microphone-btn").fadeTo( "slow" , 1);
 							startRecording();
 						}
 					});
+					input_group.append(img);
 					
 					// Creamos el input
 					var input = $("<input id='ariadna-text-input' type='text' class='form-control input-sm' style='width: 95%;' placeholder='Type your message here...' />");
@@ -86,6 +116,15 @@
 })(jQuery);
 
 var globalOptions = null;
+var conv_language = null;
+var voices = null;
+var recording = 0;
+
+window.speechSynthesis.onvoiceschanged = function() {
+	if ('speechSynthesis' in window) {
+		voices = window.speechSynthesis.getVoices();
+	}
+};
 
 function sendMessage(options){
 	//Obtenemos el mensaje a enviar
@@ -110,7 +149,7 @@ function sendMessage(options){
 	        dataType: 'json',
 	        contentType : 'application/json',
 	        async: false,
-	        data: '{"command":"' + message + '", "language":"es", "conversationId":"' + conversationId + '"}',
+	        data: '{"command":"' + message + '", "language":"' + conv_language + '", "conversationId":"' + conversationId + '"}',
 	        success: function (response) {
 	        	//Nos guardamos el id de conversación
 	        	if(conversationId == ""){
@@ -151,8 +190,15 @@ function sendMessage(options){
 	        	if ('speechSynthesis' in window) {
 		        	//Dictamos el mensaje
 		        	var msg = new SpeechSynthesisUtterance();
-		            var voices = window.speechSynthesis.getVoices();
-		            msg.voice = voices[0];
+		            
+		            for(var i = 0; i < voices.length; i++){
+		            	if(conv_language == "es" && voices[i].name=="Microsoft Helena Desktop - Spanish (Spain)"){
+		            		msg.voice = voices[i];
+		            	}else if(conv_language == "en" && voices[i].name=="Microsoft Zira Desktop - English (United States)"){
+		            		msg.voice = voices[i];
+		            	}
+		            }
+		            
 		            msg.rate = 10 / 10;
 		            msg.pitch = 1;
 		            msg.text = response.command;
